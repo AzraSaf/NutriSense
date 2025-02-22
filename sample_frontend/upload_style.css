@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=Open+Sans:wght@400;700&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100%;
+    font-family: 'IBM Plex Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    
+}
+
+/* Background Image */
+body::before {
+    content: "";
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('plant_image6.avif');
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+}
+
+/* Big Title */
+.page-title {
+    font-family: 'Caveat', cursive;
+    font-size: 48px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #fff;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+}
+
+/* Upload Wrapper */
+.upload-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    max-width: 900px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 2;
+    gap: 100px;
+    margin-top: 20px;
+}
+
+/* Instructions */
+.instructions {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: 18px;
+    padding: 25px;
+    width: 45%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Upload Container */
+.upload-container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 45%;
+    max-width: 400px;
+}
+
+/* Upload Button */
+.upload-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #1DA1F2, #0077CC); 
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    border: none;
+}
+
+.upload-btn:hover {
+    background: linear-gradient(135deg, #0077CC, #1DA1F2);
+}
+
+/* Hidden File Input */
+input[type="file"] {
+    display: none;
+}
+
+/* Arrow */
+.arrow {
+    position: absolute;
+    top: 65%;  
+    left: 50%;
+    transform: translateX(-50%) scaleY(-1);
+    width: 80px;
+    height: auto;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 1.5s ease-in-out;
+    z-index: 5;
+}
+
+.reveal {
+    clip-path: inset(0 0 0 0);
+}
+
+.next-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px; /* Adds space below upload-container */
+}
+
+.next-btn {
+    background: linear-gradient(135deg, #28a745, #218838); 
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 35px;
+    border-radius: 25px;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s ease-in-out;
+    width: 80%;
+    max-width: 250px;
+}
+
+.next-btn:hover {
+    background: linear-gradient(135deg, #218838, #28a745);
+}
