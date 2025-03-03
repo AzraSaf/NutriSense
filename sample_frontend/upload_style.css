@@ -24,18 +24,73 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('plant_image6.avif');
+    background: url('images/plant_image6.avif');
     background-size: cover;
     background-position: center;
     z-index: 0;
 }
 
+header {
+    width: 100%;
+    height: 80px;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 0 40px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 35px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 60px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 15px;
+    border: 2px solid white;
+    border-radius: 25px;
+    transition: color 0.3s, border-color 0.3s, background-color 0.3s;
+}
+
+.nav-links a:hover {
+    border-color: #1DA1F2;
+    background-color: rgba(15, 162, 253, 0.1);
+}
+
 /* Big Title */
 .page-title {
     font-family: 'Caveat', cursive;
-    font-size: 48px;
+    font-size: 60px;
     font-weight: bold;
-    margin-top: 20px;
+    margin-top: 60px;
+    margin-bottom: -10px;
     color: #fff;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     z-index: 5;
@@ -56,6 +111,8 @@ body::before {
     z-index: 2;
     gap: 100px;
     margin-top: 20px;
+    
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
 
 /* Instructions */
@@ -126,7 +183,7 @@ input[type="file"] {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-top: 20px; /* Adds space below upload-container */
+    margin-top: 40px; /* Adds space below upload-container */
 }
 
 .next-btn {
@@ -145,4 +202,31 @@ input[type="file"] {
 
 .next-btn:hover {
     background: linear-gradient(135deg, #218838, #28a745);
+}
+
+.progress-bar-container {
+    width: 80%;
+    height: 20px;
+    background: #ddd;
+    border-radius: 10px;
+    position: relative;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(135deg, #28a745, #218838);
+    transition: width 0.4s ease-in-out;
+}
+
+.progress-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: black;
 }
