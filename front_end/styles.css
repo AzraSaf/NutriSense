@@ -1,0 +1,205 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=Open+Sans:wght@400;700&display=swap');  
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+nav {
+  position: fixed;
+  z-index: 99;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+nav .wrapper {
+  position: relative;
+  max-width: 1300px;
+  padding: 0px 30px;
+  height: 70px;
+  line-height: 70px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wrapper .logo a {
+  color: #f2f2f2;
+  font-size: 28px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
+}
+
+.wrapper .logo a:hover {
+  color: #1DA1F2;
+}
+
+.wrapper .nav-links {
+  display: inline-flex;
+  gap: 10px;
+}
+
+.nav-links li {
+  list-style: none;
+  position: relative;
+}
+
+.nav-links li a {
+  color: #f2f2f2;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 15px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+.nav-links li a:hover {
+  background: rgba(29, 161, 242, 0.2);
+  color: #1DA1F2;
+}
+
+.nav-links .drop-menu {
+  position: absolute;
+  background: rgba(15, 15, 15, 0.95);
+  width: 180px;
+  line-height: 45px;
+  top: 85px;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.nav-links li:hover .drop-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  top: 70px;
+}
+
+.drop-menu li a {
+  width: 100%;
+  display: block;
+  padding: 0 0 0 15px;
+  font-weight: 400;
+  border-radius: 0;
+  font-size: 15px;
+}
+
+.drop-menu li:first-child a {
+  border-radius: 8px 8px 0 0;
+}
+
+.drop-menu li:last-child a {
+  border-radius: 0 0 8px 8px;
+}
+
+/* Add this for a nice hover effect on dropdown items */
+.drop-menu li a:hover {
+  background: rgba(29, 161, 242, 0.1);
+  padding-left: 20px;
+}
+
+/* Add an active state for the current page */
+.nav-links li a.active {
+  background: #1DA1F2;
+  color: white;
+}
+
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('images/plant_image3.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(4px);
+    z-index: -1;
+}
+
+.content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px; /* Spacing between elements */
+    padding-top: 200px;
+    flex-wrap: wrap;
+}
+
+.video-container {
+    width: 600px;  /* Adjust based on preference */
+    height: 400px;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.slogan-container {
+    text-align: center;
+    max-width: 40%;
+}
+
+/* Slogan */
+.slogan {
+    font-size: 45px;
+    font-weight: 700;
+    opacity: 0;
+    animation: fadeIn 3s ease-in-out forwards;
+    word-wrap: break-word;
+    white-space: normal;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.begin-button {
+    background-color: #1DA1F2;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.begin-button:hover {
+    background-color: #0e82cd;
+    transform: scale(1.05);
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
