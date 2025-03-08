@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=Open+Sans:wght@400;700&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100%;
+    font-family: 'IBM Plex Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    
+}
+
+/* Background Image */
+body::before {
+    content: "";
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('images/plant_image6.avif');
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+}
+
+header {
+    width: 100%;
+    height: 80px;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 0 40px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 35px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 60px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 15px;
+    border: 2px solid white;
+    border-radius: 25px;
+    transition: color 0.3s, border-color 0.3s, background-color 0.3s;
+}
+
+.nav-links a:hover {
+    border-color: #1DA1F2;
+    background-color: rgba(15, 162, 253, 0.1);
+}
+
+/* Big Title */
+.page-title {
+    font-family: 'Caveat', cursive;
+    font-size: 60px;
+    font-weight: bold;
+    margin-top: 60px;
+    margin-bottom: -10px;
+    color: #fff;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+}
+
+/* Upload Wrapper */
+.upload-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    max-width: 900px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 2;
+    gap: 100px;
+    margin-top: 20px;
+    
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+/* Instructions */
+.instructions {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: 18px;
+    padding: 25px;
+    width: 45%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Upload Container */
+.upload-container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 45%;
+    max-width: 400px;
+}
+
+/* Upload Button */
+.upload-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #1DA1F2, #0077CC); 
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    border: none;
+}
+
+.upload-btn:hover {
+    background: linear-gradient(135deg, #0077CC, #1DA1F2);
+}
+
+/* Hidden File Input */
+input[type="file"] {
+    display: none;
+}
+
+/* Arrow */
+.arrow {
+    position: absolute;
+    top: 65%;  
+    left: 50%;
+    transform: translateX(-50%) scaleY(-1);
+    width: 80px;
+    height: auto;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 1.5s ease-in-out;
+    z-index: 5;
+}
+
+.reveal {
+    clip-path: inset(0 0 0 0);
+}
+
+.next-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 40px; /* Adds space below upload-container */
+}
+
+.next-btn {
+    background: linear-gradient(135deg, #28a745, #218838); 
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 35px;
+    border-radius: 25px;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s ease-in-out;
+    width: 80%;
+    max-width: 250px;
+}
+
+.next-btn:hover {
+    background: linear-gradient(135deg, #218838, #28a745);
+}
+
+.progress-bar-container {
+    width: 80%;
+    height: 20px;
+    background: #ddd;
+    border-radius: 10px;
+    position: relative;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(135deg, #28a745, #218838);
+    transition: width 0.4s ease-in-out;
+}
+
+.progress-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: black;
+}
