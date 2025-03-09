@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Nutrient Deficiency Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Plant Nutrient Deficiency Analyzer</h1>
+            <p class="subtitle">Upload a plant leaf image to analyze its nutrient deficiency</p>
+        </header>
+
+        <main>
+            <form id="upload-form" class="upload-section">
+                <div class="file-upload">
+                    <input type="file" id="file-input" name="file" accept="image/*" required>
+                    <label for="file-input">
+                        <div class="upload-icon">📸</div>
+                        <span>Choose an image or drag it here</span>
+                    </label>
+                    <div id="preview-container" class="preview-container" style="display: none;">
+                        <img id="image-preview" src="#" alt="Preview">
+                        <button type="button" id="remove-image" class="remove-button">×</button>
+                    </div>
+                </div>
+                <button type="submit" class="analyze-button">Analyze Image</button>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing image...</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="results" class="results" style="display: none;">
+                <div class="result-card">
+                    <h2>Analysis Results</h2>
+                    <div class="result-item">
+                        <p id="plant-type" class="result-text"></p>
+                        <div id="plant-confidence" class="confidence-bar"></div>
+                    </div>
+                    <div class="result-item">
+                        <p id="deficiency-type" class="result-text"></p>
+                        <div id="deficiency-confidence" class="confidence-bar"></div>
+                    </div>
+                    <div class="result-item">
+                        <p id="severity-level" class="result-text"></p>
+                        <div id="severity-confidence" class="confidence-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Developed by Team Plant Nutrient Analyzer</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
