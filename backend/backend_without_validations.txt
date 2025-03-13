@@ -1,0 +1,219 @@
+from flask import Flask, request, jsonify
+import tensorflow as tf
+import numpy as np
+import cv2
+import os
+from werkzeug.utils import secure_filename
+from tensorflow.keras.applications.resnet50 import preprocess_input, ResNet50
+from tensorflow.keras.layers import GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from flask_cors import CORS
+import traceback
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+CORS(app)
+
+# Model Paths
+PLANT_IDENTIFIER_MODEL = "plant_identification_full_model.h5"
+RICE_MODEL_PATH = "rice_full_model.h5"
+COFFEE_MODEL_PATH = "coffee_full_model.h5"
+BANANA_MODEL_PATH = "banana_full_model.h5"
+SEVERITY_MODEL_PATH = "FINALMODELforSeverity.h5"
+
+# Load all models with error handling
+try:
+    logger.info("Loading models...")
+    plant_identifier = tf.keras.models.load_model(PLANT_IDENTIFIER_MODEL)
+    rice_model = tf.keras.models.load_model(RICE_MODEL_PATH)
+    coffee_model = tf.keras.models.load_model(COFFEE_MODEL_PATH)
+    banana_model = tf.keras.models.load_model(BANANA_MODEL_PATH)
+    severity_model = tf.keras.models.load_model(SEVERITY_MODEL_PATH)
+
+    # Log the plant identifier model's output shape
+    logger.info(f"Plant identifier output shape: {plant_identifier.output_shape}")
+    num_classes = plant_identifier.output_shape[-1]
+    logger.info(f"Number of classes in plant identifier model: {num_classes}")
+
+    logger.info("All models loaded successfully")
+except Exception as e:
+    logger.error(f"Error loading models: {str(e)}")
+    logger.error(traceback.format_exc())
+    raise
+
+# Set up ResNet50 feature extractor for severity model
+try:
+    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    feature_extractor = Model(inputs=base_model.input, outputs=x)
+    logger.info("Feature extractor set up successfully")
+except Exception as e:
+    logger.error(f"Error setting up feature extractor: {str(e)}")
+    logger.error(traceback.format_exc())
+    raise
+
+# Update this based on your actual model's classes
+# These should match exactly with how your model was trained
+PLANT_CLASSES = [
+    "Banana",  # Update these class names to match your model's training data
+    "Coffee",  # Make sure they're in the same order as during training
+    "Rice"  # Removed Wheat as there's no deficiency finder for it
+]
+
+logger.info(f"Configured plant classes: {PLANT_CLASSES}")
+
+DEFICIENCY_CLASSES = {
+    "Rice": ["Nitrogen(N)", "Phosphorus(P)", "Potassium(K)"],
+    "Coffee": ["iron-Fe", "magnesium-Mg", "potasium-K"],
+    "Banana": ["iron", "magnesium", "potassium"]
+}
+SEVERITY_CLASSES = ["Mild", "Moderate", "Severe"]
+
+# Set up upload folder
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["ALLOWED_EXTENSIONS"] = {"png", "jpg", "jpeg"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
+
+def preprocess_image(image_path, target_size=(224, 224)):
+    try:
+        image = cv2.imread(image_path)
+        if image is None:
+            raise ValueError(f"Failed to load image at {image_path}")
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, target_size)
+        image = np.array(image, dtype=np.float32)
+        image = np.expand_dims(image, axis=0)
+        image = preprocess_input(image)
+        return image
+    except Exception as e:
+        logger.error(f"Error preprocessing image: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+
+def get_deficiency_model(plant_type):
+    try:
+        # Convert to title case for consistency
+        plant_type = plant_type.title()
+        if plant_type in DEFICIENCY_CLASSES:
+            if plant_type == "Rice":
+                return rice_model, DEFICIENCY_CLASSES[plant_type]
+            elif plant_type == "Coffee":
+                return coffee_model, DEFICIENCY_CLASSES[plant_type]
+            elif plant_type == "Banana":
+                return banana_model, DEFICIENCY_CLASSES[plant_type]
+        raise ValueError(f"No deficiency model available for plant type: {plant_type}")
+    except Exception as e:
+        logger.error(f"Error getting deficiency model: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(file_path)
+            logger.info(f"File saved successfully at {file_path}")
+
+            try:
+                # Step 1: Identify the plant
+                logger.info("Starting plant identification")
+                plant_image = preprocess_image(file_path)
+                plant_predictions = plant_identifier.predict(plant_image)
+
+                # Log the prediction array for debugging
+                logger.info(f"Plant predictions array: {plant_predictions}")
+                logger.info(f"Plant predictions shape: {plant_predictions.shape}")
+
+                plant_class_idx = np.argmax(plant_predictions)
+                logger.info(f"Predicted plant class index: {plant_class_idx}")
+
+                if plant_class_idx >= len(PLANT_CLASSES):
+                    raise ValueError(
+                        f"Model predicted class index {plant_class_idx} but we only have {len(PLANT_CLASSES)} classes configured")
+
+                plant_type = PLANT_CLASSES[plant_class_idx]
+                plant_confidence = float(plant_predictions[0][plant_class_idx])
+                logger.info(f"Plant identified as: {plant_type} with confidence: {plant_confidence}")
+
+                # Only proceed with deficiency and severity analysis for supported plants
+                if plant_type.title() not in DEFICIENCY_CLASSES:
+                    return jsonify({
+                        "plant": {
+                            "type": plant_type,
+                            "confidence": plant_confidence
+                        },
+                        "message": f"Deficiency analysis not available for {plant_type}"
+                    })
+
+                # Step 2: Get appropriate deficiency model and predict deficiency
+                logger.info(f"Getting deficiency model for {plant_type}")
+                deficiency_model, deficiency_labels = get_deficiency_model(plant_type)
+                deficiency_predictions = deficiency_model.predict(plant_image)
+                deficiency_class_idx = np.argmax(deficiency_predictions)
+                deficiency_type = deficiency_labels[deficiency_class_idx]
+                deficiency_confidence = float(deficiency_predictions[0][deficiency_class_idx])
+                logger.info(f"Deficiency identified as: {deficiency_type}")
+
+                # Step 3: Predict severity
+                logger.info("Predicting severity")
+                features = feature_extractor.predict(plant_image)
+                severity_predictions = severity_model.predict(features)
+                severity_class_idx = np.argmax(severity_predictions)
+                severity_level = SEVERITY_CLASSES[severity_class_idx]
+                severity_confidence = float(severity_predictions[0][severity_class_idx])
+                logger.info(f"Severity level identified as: {severity_level}")
+
+                # Clean up
+                os.remove(file_path)
+                logger.info("Temporary file removed")
+
+                return jsonify({
+                    "plant": {
+                        "type": plant_type,
+                        "confidence": plant_confidence
+                    },
+                    "deficiency": {
+                        "type": deficiency_type,
+                        "confidence": deficiency_confidence
+                    },
+                    "severity": {
+                        "level": severity_level,
+                        "confidence": severity_confidence
+                    }
+                })
+
+            except Exception as e:
+                logger.error(f"Error during prediction: {str(e)}")
+                logger.error(traceback.format_exc())
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return jsonify({"error": str(e)}), 500
+
+        return jsonify({"error": "Invalid file type"}), 400
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
