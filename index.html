@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Nutrient Deficiency Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #2c6e49;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #2c6e49;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+            opacity: 0;
+            animation: slideIn 0.8s ease-out forwards;
+            text-align: center;
+        }
+
+        .drag-drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            background: #f9f9f9;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .drag-drop-area:hover,
+        .drag-drop-area.active {
+            border-color: #2c6e49;
+        }
+
+        .drag-drop-area img {
+            width: 50px;
+            margin-bottom: 10px;
+        }
+
+        .drag-drop-area p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        .clear-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #d9534f;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
+        }
+
+        .image-preview {
+            display: none;
+            margin-top: 20px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            display: inline-block;
+            margin: 0 auto;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        button {
+            background: #2c6e49;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #1e4d33;
+            transform: translateY(-2px);
+        }
+
+        .results-section {
+            padding: 30px;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        h2 {
+            color: #2c6e49;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #2c6e49;
+            padding-bottom: 5px;
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #2c6e49;
+            padding: 15px;
+            background-color: #f0f8f4;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            opacity: 0;
+            animation: cardFadeIn 0.5s ease-out forwards;
+        }
+
+        .soil-selection-section {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .soil-selection-section.active {
+            display: block;
+        }
+
+        .soil-options {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .soil-option {
+            padding: 10px 20px;
+            background: #f9f9f9;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s ease, background 0.3s ease;
+            text-align: center;
+        }
+
+        .soil-option:hover,
+        .soil-option.active {
+            border-color: #2c6e49;
+            background: #e0f7e9;
+        }
+
+        .soil-option p {
+            margin: 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .submit-soil-btn {
+            margin-top: 20px;
+            background: #2c6e49;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-soil-btn:hover {
+            background: #1e4d33;
+            transform: translateY(-2px);
+        }
+
+        .detailed-report {
+            margin-top: 30px;
+        }
+
+        .detailed-report h3 {
+            color: #2c6e49;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #2c6e49;
+            padding-bottom: 5px;
+        }
+
+        .detailed-report .sub-section {
+            margin: 20px 0;
+        }
+
+        .detailed-report .sub-section h4 {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .detailed-report p {
+            margin: 5px 0;
+            font-size: 1rem;
+        }
+
+        .guidelines-list {
+            margin-top: 10px;
+            list-style-type: none;
+        }
+
+        .guidelines-list ul {
+            list-style-type: none;
+            margin-left: 20px;
+        }
+
+        .guidelines-list li {
+            margin: 5px 0;
+        }
+
+        .error {
+            color: #d9534f;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            background: #f2dede;
+            border-radius: 5px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header p {
+                font-size: 0.9rem;
+            }
+
+            .input-section, .results-section {
+                padding: 20px;
+            }
+
+            .soil-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .soil-option {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Plant Nutrient Deficiency Analyzer</h1>
+            <p>Upload a plant leaf image to analyze its nutrient deficiency</p>
+        </header>
+
+        <section class="input-section">
+            <div class="drag-drop-area" id="dragDropArea">
+                <img src="https://img.icons8.com/ios-filled/50/000000/camera.png" alt="Camera Icon">
+                <p>Choose an image or drag it here</p>
+                <input type="file" id="plantImage" accept="image/*" style="display: none;" required>
+                <button class="clear-btn" id="clearBtn" onclick="clearImage()">X</button>
+            </div>
+            <div class="image-preview" id="imagePreview"></div>
+            <button onclick="analyzePlant()">Analyze Image</button>
+        </section>
+
+        <section class="results-section" id="results">
+            <h2>Analysis Results</h2>
+            <div id="resultContent"></div>
+            <div class="soil-selection-section" id="soilSelection">
+                <h3>Select Soil Type</h3>
+                <div class="soil-options" id="soilOptions">
+                    <div class="soil-option" data-soil="Loamy">
+                        <p>Loamy</p>
+                    </div>
+                    <div class="soil-option" data-soil="Sandy">
+                        <p>Sandy</p>
+                    </div>
+                    <div class="soil-option" data-soil="Clay">
+                        <p>Clay</p>
+                    </div>
+                </div>
+                <button class="submit-soil-btn" onclick="submitSoilType()">Submit Soil Type</button>
+            </div>
+            <div class="detailed-report" id="detailedReport"></div>
+        </section>
+    </div>
+
+    <script>
+        const dragDropArea = document.getElementById('dragDropArea');
+        const fileInput = document.getElementById('plantImage');
+        const clearBtn = document.getElementById('clearBtn');
+        const imagePreview = document.getElementById('imagePreview');
+        const resultsSection = document.getElementById('results');
+        const resultContent = document.getElementById('resultContent');
+        const soilSelection = document.getElementById('soilSelection');
+        const soilOptions = document.getElementById('soilOptions');
+        const detailedReport = document.getElementById('detailedReport');
+
+        let selectedSoilType = null;
+        let initialAnalysisData = null;
+
+        dragDropArea.addEventListener('click', () => fileInput.click());
+
+        dragDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.add('active');
+        });
+
+        dragDropArea.addEventListener('dragleave', () => {
+            dragDropArea.classList.remove('active');
+        });
+
+        dragDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('active');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                previewImage(files[0]);
+                dragDropArea.querySelector('p').textContent = files[0].name;
+                clearBtn.style.display = 'block';
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                previewImage(fileInput.files[0]);
+                dragDropArea.querySelector('p').textContent = fileInput.files[0].name;
+                clearBtn.style.display = 'block';
+            }
+        });
+
+        function previewImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                imagePreview.classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            fileInput.value = '';
+            dragDropArea.querySelector('p').textContent = 'Choose an image or drag it here';
+            imagePreview.innerHTML = '';
+            imagePreview.classList.remove('active');
+            clearBtn.style.display = 'none';
+            resultsSection.classList.remove('active');
+            resultContent.innerHTML = '';
+            soilSelection.classList.remove('active');
+            detailedReport.innerHTML = '';
+            selectedSoilType = null;
+            initialAnalysisData = null;
+        }
+
+        async function analyzePlant() {
+            // Validation
+            if (!fileInput.files[0]) {
+                alert('Please upload an image.');
+                return;
+            }
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('initial', 'true'); // Indicate initial request
+
+            // Show loading state
+            resultsSection.classList.add('active');
+            resultContent.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch('/predict-and-recommend', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server error: ' + response.statusText);
+                }
+
+                const data = await response.json();
+
+                // Store initial analysis data for later use
+                initialAnalysisData = data;
+
+                // Display initial results
+                resultContent.innerHTML = '';
+
+                // Plant Type
+                const plantItem = document.createElement('div');
+                plantItem.className = 'result-item';
+                plantItem.innerHTML = `
+                    <p>Plant Type: ${data.plant.type} (${(data.plant.confidence * 100).toFixed(2)}% confidence)</p>
+                `;
+                resultContent.appendChild(plantItem);
+
+                // Deficiency
+                const defItem = document.createElement('div');
+                defItem.className = 'result-item';
+                defItem.innerHTML = `
+                    <p>Deficiency: ${data.deficiency.type} (${(data.deficiency.confidence * 100).toFixed(2)}% confidence)</p>
+                `;
+                resultContent.appendChild(defItem);
+
+                // Severity
+                const sevItem = document.createElement('div');
+                sevItem.className = 'result-item';
+                sevItem.innerHTML = `
+                    <p>Severity: ${data.severity.level} (${(data.severity.confidence * 100).toFixed(2)}% confidence)</p>
+                `;
+                resultContent.appendChild(sevItem);
+
+                // Show soil selection section
+                soilSelection.classList.add('active');
+                detailedReport.innerHTML = ''; // Clear detailed report until soil type is selected
+
+                // Add event listeners for soil options
+                const soilOptionElements = soilOptions.querySelectorAll('.soil-option');
+                soilOptionElements.forEach(option => {
+                    option.addEventListener('click', () => {
+                        // Remove active class from all options
+                        soilOptionElements.forEach(opt => opt.classList.remove('active'));
+                        // Add active class to selected option
+                        option.classList.add('active');
+                        selectedSoilType = option.getAttribute('data-soil');
+                    });
+                });
+
+            } catch (error) {
+                resultContent.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                soilSelection.classList.remove('active');
+            }
+        }
+
+        async function submitSoilType() {
+            if (!selectedSoilType) {
+                alert('Please select a soil type.');
+                return;
+            }
+
+            if (!initialAnalysisData) {
+                alert('No initial analysis data available. Please analyze an image first.');
+                return;
+            }
+
+            // Prepare form data for final request
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('soil_type', selectedSoilType);
+            formData.append('initial', 'false'); // Indicate final request
+
+            // Show loading state for detailed report
+            detailedReport.innerHTML = '<p>Loading detailed report...</p>';
+
+            try {
+                const response = await fetch('/predict-and-recommend', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server error: ' + response.statusText);
+                }
+
+                const data = await response.json();
+
+                // Display detailed report
+                const rec = data.recommendation;
+                const guidelines = rec.application_guidelines;
+                const guidelinesHTML = `
+                    <p><strong>Fertilizer Application Guidelines (Applicable to Banana, Coffee & Rice)</strong></p>
+                    <ul class="guidelines-list">
+                        <li><strong>Application Methods:</strong>
+                            <ul>
+                                <li><strong>Even & Precise Spreading:</strong> ${guidelines.Application_Methods.Even_Precise_Spreading}</li>
+                                <li><strong>Split Applications:</strong>
+                                    <ul>
+                                        <li><strong>Nitrogen:</strong> ${guidelines.Application_Methods.Split_Applications.Nitrogen}</li>
+                                        <li><strong>Phosphorus, Potassium, Zinc:</strong> ${guidelines.Application_Methods.Split_Applications.Phosphorus_Potassium_Zinc}</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Equipment & Conditions:</strong> ${guidelines.Application_Methods.Equipment_Conditions}</li>
+                            </ul>
+                        </li>
+                        <li><strong>General Best Practices:</strong>
+                            <ul>
+                                <li><strong>Quality & Consistency:</strong> ${guidelines.General_Best_Practices.Quality_Consistency}</li>
+                                <li><strong>Timing & Precision:</strong> ${guidelines.General_Best_Practices.Timing_Precision}</li>
+                                <li><strong>Zone-Specific Recommendations:</strong> ${guidelines.General_Best_Practices.Zone_Specific_Recommendations}</li>
+                            </ul>
+                        </li>
+                    </ul>
+                `;
+
+                detailedReport.innerHTML = `
+                    <h3>Detailed Plant Report</h3>
+                    <div class="sub-section">
+                        <h4>Recommendation</h4>
+                        <p><strong>Plant:</strong> ${data.plant.type}</p>
+                        <p><strong>Deficiency:</strong> ${data.deficiency.type}</p>
+                        <p><strong>Severity:</strong> ${data.severity.level}</p>
+                        <p><strong>Recommendation:</strong> ${rec.recommendation}</p>
+                        <p><strong>Location:</strong> ${rec.location}</p>
+                        <p><strong>Temperature:</strong> ${parseFloat(rec.temperature).toFixed(1)}°C</p>
+                        <p><strong>Humidity:</strong> ${rec.humidity}%</p>
+                        <p><strong>Soil Suitability:</strong> ${rec.soil_suitability}</p>
+                        <p><strong>Temperature Status:</strong> ${rec.temperature_status}</p>
+                        <p><strong>Humidity Status:</strong> ${rec.humidity_status}</p>
+                        ${guidelinesHTML}
+                    </div>
+                `;
+            } catch (error) {
+                detailedReport.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
