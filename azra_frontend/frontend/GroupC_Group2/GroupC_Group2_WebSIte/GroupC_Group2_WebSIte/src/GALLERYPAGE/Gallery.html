@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+      aria-setsize="-1"
+    />
+    <title>Learn.com | Gallery</title>
+    <link rel="stylesheet" href="Gallery.css" />
+    <!--Preconnect to google fonts-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" href="learn.png" />
+    <!--external libraries css-->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css"
+    />
+  </head>
+  <body>
+    <div class="top-bg">
+      <!--button for scrolling to top and bottom-->
+      <button
+        onclick="topFunction()"
+        id="topBtn"
+        title="Go to top"
+        style="background-color: transparent"
+      >
+        <i
+          class="bx bx-chevrons-up"
+          style="font-size: xx-large; color: #fb046c"
+        ></i>
+      </button>
+      <button
+        onclick="bottomFunction()"
+        id="bottomBtn"
+        title="Go to bottom"
+        style="background-color: transparent"
+      >
+        <i
+          class="bx bx-chevrons-down"
+          style="font-size: xx-large; color: #fb046c"
+        ></i>
+      </button>
+      <div class="logo">
+        <i
+          class="bx bx-registered"
+          style="color: #fb046c; margin-left: 160px; margin-top: 45px"
+        ></i>
+      </div>
+      <div class="nav">
+        <br />
+        <ul>
+          <li>
+            <a href="../MAINPAGE/Mainpage.html"
+              ><i class="bx bx-home"></i>Home</a
+            >
+          </li>
+          <li>
+            <a href="../SHOPPAGE/shop.html"
+              ><i class="bx bx-shopping-bag"></i>Shop</a
+            >
+          </li>
+          <li style="font-size: large; font-weight: 900">
+            <a href="Gallery.html"><i class="bx bx-photo-album"></i>Gallery</a>
+          </li>
+          <li>
+            <a href="../LISTINGPAGE/listingpage.html"
+              ><i class="bx bx-message-rounded-dots"></i>Reviews</a
+            >
+          </li>
+          <li>
+            <a href="../ABOUTUSPAGE/about.html"
+              ><i class="bx bx-face"></i>About</a
+            >
+          </li>
+          <li>
+            <a href="../CONTACTPAGE/Contact.html"
+              ><i class="bx bx-envelope"></i>Contact</a
+            >
+          </li>
+          <li
+            style="
+              border: 2px solid #fb046c;
+              background-color: #fb046c;
+              border-radius: 12px;
+              padding: 5px;
+            "
+          >
+            <a href="../MAINPAGE/Mainpage.html"
+              ><i class="bx bx-search"></i> Find a language</a
+            >
+          </li>
+          <li>
+            <a href="../SIGNINPAGE/SignInForm.html"
+              ><i
+                class="bx bx-user-circle"
+                style="
+                  color: white;
+                  font-size: xx-large;
+                  position: relative;
+                  top: 9px;
+                "
+              ></i
+            ></a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="container1" id="section1">
+        <div
+          class="section-1"
+          style="margin-top: 250px; padding-bottom: 64px; margin-left: 150px"
+        >
+          <div style="max-width: 1225px; margin: auto; position: relative">
+            <h1>Your mind is</h1>
+            <h1>a powerful thing.</h1>
+            <br />
+
+            <a
+              href="#section4"
+              target="_self"
+              class="button"
+              style="margin-left: 0"
+            >
+              <span class="span1"><b>See Gallery</b></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container15" id="section15">
+      <div class="section15left">
+        <img src="Book.png" alt="Left Image" />
+        <br />
+        <br />
+        <br />
+        <h3>UnWrap Languages by Learners</h3>
+        <br />
+        <p>
+          The most well-versed compilation of 2023 on the wide range of
+          languages for communication. Limited Hard-Copy Editions available.
+          Grab urs now.
+        </p>
+        <br />
+        <br />
+        <a href="shop.html" class="button"
+          ><span class="span">Go to Shop</span>
+        </a>
+      </div>
+      <div class="section15right">
+        <h1>Recent Projects</h1>
+        <br />
+        <h3>
+          Our brilliant Learners, on this educational voyage joined hands to
+          compile this wonderful book and challenged themselves on our most
+          awaited bootcamp session with the most talented panel of tutors.
+        </h3>
+
+        <br />
+        <br />
+
+        <div class="image">
+          <img src="Bootcamp.png" alt="Right Image" />
+          <br />
+          <br />
+          <br />
+          <h3>2024 March BootCamp Swirl</h3>
+          <br />
+          <br />
+          <p>
+            If there ever was a world tour for every aspect of language, this
+            session would be at the top of the list. An interactive landscape of
+            Learners contributed to registering themselves to show much needed
+            commitment on their careers and participated in our monthly
+            organized bootcamp.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel" id="section4">
+      <div class="section4">
+        <!-- list item -->
+        <div class="list">
+          <div class="item">
+            <img src="Pp.png" alt="GalleryIntro" />
+            <div class="content">
+              <div class="author">Learn.com</div>
+              <div class="title">EXPLORE OUR</div>
+              <div class="topic">GALLERY</div>
+              <div class="des">Take a peak at our Hall of Fame!</div>
+              <div class="buttons">
+                <button>SEE MORE</button>
+                <button>SUBSCRIBE</button>
+              </div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="Awards.png" alt="Awards Image" />
+            <div class="content">
+              <div class="author">Learn.com</div>
+              <div class="title">AWARDS</div>
+              <div class="topic">Best Learning Website 2023</div>
+              <div class="des">
+                We the team Learn.com was awarded the Best Learning Website of
+                2023. We are
+              </div>
+              <div class="des">
+                forever grateful for our Learners to be able to reach the peak
+                of their
+              </div>
+              <div class="des">
+                career and acknowledge the stairs that led them there.
+              </div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="ART.png" alt="Art Book" />
+            <div class="content">
+              <div class="author">Tutor Bobby Simon</div>
+              <div class="title">ART IS A</div>
+              <div class="topic">LANGUAGE TOO</div>
+              <div class="des">
+                Our best-selling book by Tutor and Artist Bobby Simon reached
+                its
+              </div>
+              <div class="des">peak among our Learners.</div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="Podcast.png" alt="WeeklyPodcast" />
+            <div class="content">
+              <div class="author">Learn.com</div>
+              <div class="title">Weekly</div>
+              <div class="topic">Podcast</div>
+              <div class="des">
+                We have always had inspirational podcasts for those wanting to
+                aspire hugh levels of communication, let it be; languages, ASL,
+                many more. Turn on your notifications to receive our updates.
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <img src="Spain.png" alt="SpanishLessons" />
+            <div class="content">
+              <div class="author">Learn.com</div>
+              <div class="title">SPANISH</div>
+              <div class="topic">LESSONS</div>
+              <div class="des">
+                Enroll in our most populated course! Our Learners voted our
+                Spanish Course to be the most influential and interesting
+                program, do check it out!
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <img src="Interactive.png" alt="InteractivePpl" />
+            <div class="content">
+              <div class="author">Learn.com</div>
+              <div class="title">INTERACTIVE</div>
+              <div class="topic">WORKSHOP</div>
+              <div class="des">
+                We organized interactive workshops for those pursuing American
+                Sign Language. We here at Learn.com received immense feedback
+                for this lovely program. Stay Tuned for our next workshop.
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <img src="AI%20.png" alt="AIBased" />
+            <div class="content">
+              <div class="author">Learn.com</div>
+              <div class="title">AI BASED</div>
+              <div class="topic">LEARNING</div>
+              <div class="des">
+                Our developers curated this AI Generated Platform to customize
+                requirements based on your interests. Get your webpage suited to
+                your liking and easy navigation. Our Learning Programs are right
+                at your doorstep.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- list thumnail -->
+        <div class="thumbnail">
+          <div class="item">
+            <img src="Pp.png" alt="GalleryIntro" />
+            <div class="content">
+              <div class="title">Introduction</div>
+              <div class="description"></div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="Awards.png" alt="Awards Image" />
+            <div class="content">
+              <div class="title">Awards</div>
+              <div class="description"></div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="ART.png" alt="Art Book" />
+            <div class="content">
+              <div class="title">Art is a Language too</div>
+              <div class="description"></div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="Podcast.png" alt="WeeklyPodcast" />
+            <div class="content">
+              <div class="title">Weekly Podcast</div>
+              <div class="description"></div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="Spain.png" alt="SpanishLessons" />
+            <div class="content">
+              <div class="title">Making it to Spain?</div>
+              <div class="description"></div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="Interactive.png" alt="InteractivePpl" />
+            <div class="content">
+              <div class="title">Workshops</div>
+              <div class="description"></div>
+            </div>
+          </div>
+          <div class="item">
+            <img src="AI%20.png" alt="AIBased" />
+            <div class="content">
+              <div class="title">Customized AI Learning</div>
+              <div class="description"></div>
+            </div>
+          </div>
+        </div>
+        <!-- next prev -->
+
+        <div class="arrows">
+          <button id="prev"><</button>
+          <button id="next">></button>
+        </div>
+        <!-- time running -->
+        <div class="time"></div>
+      </div>
+    </div>
+
+    <div class="container2" id="section2">
+      <div class="section2">
+        <p>
+          <b
+            >Embrace the art of learning; each stroke of knowledge adds depth
+            and brilliance to your canvas of understanding.
+          </b>
+        </p>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-section">
+        <div class="logo2">
+          <i
+            class="bx bx-registered"
+            style="color: #fb046c; margin-left: 160px; margin-top: 45px"
+          ></i>
+        </div>
+        <p style="font-size: 13px; text-align: left">
+          567 Willow Lane Suite <br />
+          200 Oakville,<br />
+          ON L6H 5R7 Canada
+        </p>
+        <br />
+
+        <p style="font-size: 13px; text-align: left">Tel-No. 123456789</p>
+        <br />
+
+        <a href=" " class="links"> learn@Gmail.com </a>
+        <br />
+        <br />
+        <ul class="socialMediaLinks">
+          <li><a href="#" class="fa fa-facebook"></a></li>
+          <li><a href="#" class="fa fa-twitter"></a></li>
+          <li><a href="#" class="fa fa-youtube"></a></li>
+          <li><a href="#" class="fa fa-instagram"></a></li>
+          <li><a href="#" class="fa fa-linkedin"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h3>SUPPORT</h3>
+        <ul class="column">
+          <li>
+            <a href="../CONTACTPAGE/Contact.html" class="links"> Contact us</a>
+          </li>
+          <li>
+            <a href="../ABOUTUSPAGE/about.html" class="links"> About us</a>
+          </li>
+          <br />
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h3>SHOP</h3>
+        <ul class="column">
+          <li><a href="../SHOPPAGE/shop.html" class="links"> English </a></li>
+          <li><a href="../SHOPPAGE/shop.html" class="links"> Spanish </a></li>
+          <li><a href="../SHOPPAGE/shop.html" class="links"> French </a></li>
+          <li><a href="../SHOPPAGE/shop.html" class="links"> Korean </a></li>
+          <p id="copyright" style="font-size: 13px">
+            Copyright © 2024 Learn.com
+          </p>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h3>PROFILE</h3>
+        <ul class="column">
+          <li>
+            <a href="../SIGNINPAGE/SignInForm.html" class="links"> Account </a>
+          </li>
+          <li>
+            <a href="../SIGNINPAGE/SignInForm.html" class="links"> Login </a>
+          </li>
+          <li>
+            <a href="../SIGNINPAGE/SignInForm.html" class="links"> Sign up </a>
+          </li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>OTHER</h3>
+        <ul class="column">
+          <li><a href="../QUIZ/QUIZZ.html" class="links"> Quiz </a></li>
+          <li>
+            <a href="../GALLERYPAGE/Gallery.html" class="links"> Gallery </a>
+          </li>
+          <li>
+            <a href="../LISTINGPAGE/listingpage.html" class="links">
+              Reviews and Ratings
+            </a>
+          </li>
+          <li>
+            <a href="../PAGE_EDITORS_PAGE/Student1_Nabeeha.html" class="links">
+              Editor's Page</a
+            >
+          </li>
+        </ul>
+      </div>
+      <br />
+    </footer>
+    <script src="Gallery.js"></script>
+  </body>
+</html>

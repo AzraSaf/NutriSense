@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<reviews>
+
+    <review>
+        <course>Farmer</course>
+        <user>Hasanka</user>
+        <rating>4.0</rating>
+        <content>
+            <![CDATA[
+                Before using NutriSense, I struggled to pinpoint the exact cause of yellowing leaves<br>
+                 in my rice fields. I often applied fertilizers based on guesswork, which sometimes made <br>
+                 things worse. With NutriSense, I simply upload a leaf image, and within seconds, I get an <br>
+                 accurate diagnosis. It identified a nitrogen deficiency early, and after following the recommended
+                 <br>solutions, my crop health improved significantly. This tool has truly helped me reduce waste
+                 <br>and increase my yield!
+            ]]>
+        </content>
+        <date>03/03/2025</date>
+
+    </review>
+
+
+
+    <review>
+        <course>Agronomist</course>
+        <user>Johan</user>
+        <rating>3.0</rating>
+
+        <content>
+            <![CDATA[
+                As an agronomist working with various vegetable farmers, I needed a reliable way to detect nutrient<br>
+                 deficiencies without waiting for lab results. NutriSense has been a game-changer! It detected potassium<br>
+                  deficiency in tomato plants at an early stage, preventing severe yield loss. The detailed recommendations<br>
+                   also help farmers understand the corrective measures, making their farming more efficient and cost-effective. <Br>
+                   This is a must-have tool for precision agriculture!
+            ]]>
+        </content>
+        <date>07/02/2025</date>
+    </review>
+
+    <review>
+        <course>Large-Scale Wheat Farmer</course>
+        <user>Hector</user>
+        <rating>5.0</rating>
+
+        <content>
+            <![CDATA[
+            Managing hundreds of acres of wheat requires constant monitoring, and NutriSense has made this so much easier.<br>
+            The AI-based diagnosis is incredibly fast and accurate, saving me hours of manual inspection. I love how I can<br>
+            instantly get insights on deficiencies and receive tailored recommendations. Since using NutriSense, my fertilizer<br>
+            application has become more precise, reducing costs and boosting crop productivity. I highly recommend it to any<br>
+            large-scale farmer looking for smarter nutrient management solutions.
+]]>
+        </content>
+        <date>18/01/2025</date>
+    </review>
+
+    <review>
+        <course>Greenhouse Grower</course>
+        <user>Mohammed</user>
+        <rating>4.0</rating>
+
+        <content>
+            <![CDATA[
+                    I run a greenhouse where maintaining plant health is critical, especially since I grow organic produce.<br>
+                    NutriSense has been an invaluable tool in helping me ensure my plants get the right nutrients without<br>
+                    overusing fertilizers. The AI-powered analysis is surprisingly accurate, even detecting minor deficiencies<br>
+                    before they become visible to the naked eye. It has helped me maintain healthier crops and maximize yield while<br>
+                    staying true to sustainable farming practices.
+            ]]>
+        </content>
+        <date>02/01/2025</date>
+    </review>
+
+
+
+
+
+</reviews>

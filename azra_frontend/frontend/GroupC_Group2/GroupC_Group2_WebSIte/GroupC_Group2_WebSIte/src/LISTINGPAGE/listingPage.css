@@ -1,0 +1,693 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Montserrat";
+}
+
+/* Navigation bar */
+.nav li {
+    display: inline-block;
+    position: relative;
+
+}
+.search{
+    border: 2px solid #74a97b;
+    background-color: #74a97b;
+    border-radius: 12px;
+    padding: 5px;
+}
+
+#top {
+    position: relative;
+}
+
+.topbg {
+
+    width: 100%;
+    height: 550px;
+    background-image: url("reviews.jpg");
+    background-size: cover;
+    background-position: bottom ;
+   background-attachment: fixed;
+
+
+}
+
+.logo {
+    width: 200px;
+    height: 98px;
+    background-image: url("nutrilogo1.png");
+    background-size: contain;
+    margin-left: 20px;
+}
+
+.nav {
+    position: absolute;
+    right: 20px;
+    top: 40px;
+    font-size: medium;
+
+}
+.nav ul li{
+    transition: 0.3s ease-in-out;
+}
+.nav ul li:hover {
+    font-weight: 900;
+    font-size: larger;
+}
+
+.nav li a {
+    padding: 8px;
+    color: white;
+    text-decoration: none;
+}
+
+.black {
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(
+            rgba(0, 0, 0, 0.8),
+            rgba(0, 0, 0, 0.6)
+    );
+}
+
+body {
+    font-size: 13px;
+    overflow-x: hidden;
+    background-color: #f1f1f1;
+}
+
+/* Header styles */
+h2{
+    margin-bottom: 20px;
+}
+
+h1{
+    position: relative;
+    color: white;
+    top: 100px;
+    left: 413px;
+    font-weight: bold;
+    font-size: 65px;
+
+}
+
+.headCont{
+    position: absolute;
+    left: 4%;
+}
+.intro{
+    position: relative;
+    color: white;
+    top: 120px;
+    left: 53%;
+    font-size: 16px;
+}
+#intro2{
+    position: relative;
+    right: 50px;
+}
+#intro3{
+    position: relative;
+    left: 8px;
+
+}
+.dropdown-cont {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    border: 2px solid #e1e1e1;
+    padding: 30px;
+    max-width: 900px;
+    border-radius: 20px;
+    box-shadow: 0 5px #74a97b;
+    position: absolute;
+    margin: 0 auto;
+    top: 67%;
+    left: 19%;
+    background-color: #f1f1f1;
+}
+
+.dropdown-menu {
+    background-color:#e1e1e1;
+    border: 1px solid #74a97b;
+    padding: 12px 50px;
+    border-radius: 40px;
+    cursor: pointer;
+    margin: 10px;
+}
+.Text {
+    position: relative;
+    bottom: 3px;
+    font-size: 17px;
+
+}
+.icon{
+    position: relative;
+    top: 3px;
+    left: 40px;
+}
+
+
+
+
+/* review box */
+.front {
+    width: 100%;
+    height: 90%;
+    position: absolute;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.review-cube img {
+    width: 90px;
+    height: 90px;
+    border-radius: 25px;
+    margin-left: 80px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.course{
+    font-weight: bold;
+    position: relative;
+    text-align: center;
+    top: 40px;
+    font-size: 14px;
+}
+.Review{
+    position: relative;
+    left: 580px;
+    bottom: 200px;
+}
+.Review p{
+    font-size: 16px;
+}
+.date{
+    position: relative;
+    top: 68px;
+    left: 660px;
+
+}
+.rating {
+    font-size: 25px;
+    font-weight: bold;
+    color: #ffcc00;
+    position: relative;
+    text-align: center;
+    top: 40px;
+
+}
+
+.review-cube {
+    width: 250px;
+    height: 350px;
+    position: relative;
+    color: #000000;
+    left: 200px;
+    top: 100px;
+    margin-top: -50px;
+
+}
+
+
+.front {
+    background-color: #ffffff;
+    box-shadow: 0 6px 40px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.reviews{
+    margin-bottom: 405px;
+    margin-top: 100px;
+}
+
+
+/*
+footer
+ */
+footer {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgb(38, 38, 38);
+    color: white;
+    padding: 20px;
+    height: 850px;
+    overflow: hidden;
+
+}
+
+.footer-section {
+    flex: 1;
+    text-align: left;
+    position: relative;
+    top: 500px;
+    left: 70px;
+
+}
+#copyright{
+    position: relative;
+    top: 200px;
+}
+.bx-user-circle:hover {
+    opacity: 0.7;
+}
+.footer-section h3 {  /* heading for each footer section*/
+    margin-bottom: 20px;
+    margin-top: 30px;
+    font-size: 13px;
+}
+
+.footer-section ul {
+    list-style-type: none;
+}
+
+
+.socialMediaLinks li{
+    display: inline-block;
+    position: relative;
+    right: 1px;
+
+
+}
+.socialMediaLinks li a {
+    color: #74a97b;
+    text-decoration: none;
+    font-size: 16px;
+
+}
+.footer-section a:hover{
+    opacity: 0.7;
+}
+
+.footer-section ul li {  /* spaces around the information */
+    margin-bottom: 5px;
+    margin-right: 10px;
+}
+.links{                         /* all the links in footer  */
+    text-decoration: none;
+    color: inherit;
+    text-align: left;
+    font-size: 13px;
+}
+
+.logo2{
+    width: 200px;
+    height: 98px;
+    background-image: url("nutrilogo1.png");
+    background-size: contain;
+    position: relative;
+}
+
+
+
+/*
+Customize button
+ */
+
+.CustomizeBtn{
+    border: none;
+    height: 70px;
+    width: 180px;
+    font-size:15px;
+    cursor:pointer;
+    text-align: center;
+    background-color: transparent;
+    float: right;
+
+}
+/*
+Arrow Hover effect for button
+ */
+.CustomizeBtn span {
+    cursor: pointer;
+    position: relative;
+
+    transition: 0.5s;
+}
+
+.CustomizeBtn span:after {
+    content: '\00bb';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -20px;
+    transition: 0.5s;
+}
+
+.CustomizeBtn:hover span {
+    padding-right: 25px;
+
+}
+
+.CustomizeBtn:hover span:after {
+    opacity: 1;
+    right: 0;
+}
+
+/*
+Side bar navi
+
+ */
+.Colours {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 14px;
+    color: #818181;
+    display: block;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+}
+.dropdown-btn,.dropdown-btn2{
+    position: relative;
+    right: 50px;
+    bottom: 20px;
+    font-size: 14px;
+    color: #818181;
+    display: block;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+}
+
+.sidenav a:hover, .dropdown-btn:hover,.dropdown-btn2:hover{
+    color: #f1f1f1;
+}
+
+.dropdown-container1,.dropdown-container2 {
+    display: none;
+    background-color: #000000;
+    position: relative;
+    left: 40px;
+    bottom: 20px;
+}
+
+.fa-caret-down {
+    float: right;
+    padding-right: 8px;
+}
+
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 99;
+    top: 0;
+    Right: 0;
+    background-color: #000000;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+
+
+}
+
+.options {
+    position: relative;
+    left: 30px;
+    bottom: 20px;
+    font-size: 18px;
+    color: #ffffff;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.sidenav .closebtn {
+    position: relative;
+    font-size: 26px;
+    margin-left: 250px;
+    bottom: 50px;
+    text-decoration: none;
+
+}
+.border{
+    box-sizing: border-box;
+    border: 1px solid #707070;
+    padding-right: 6px;
+    padding-left: 6px;
+}
+
+
+@media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+}
+
+/*
+Font buttons
+ */
+.cont{
+    display: table;
+    position: fixed;
+}
+
+.cont button{
+    margin-left: 90px;
+    border: transparent;
+    font-size: 14px;
+    padding: 10px;
+    color: #489654;
+    background-color: #000000;
+    display: block;
+}
+#resetBtn{
+    display: inline-block;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color: #0a0a0a;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 3px #999;
+}
+#resetBtn:hover{
+    color: #969696;
+}
+#resetBtn:active {
+    background-color: #7a7a7a;
+    box-shadow: 0 2px #666;
+    transform: translateY(4px);
+}
+
+#topBtn, #bottomBtn {
+    display: none;
+    position: fixed;
+    z-index: 99;
+    font-size: 10px;
+    border: none;
+    outline: none;
+    background-color: #489654;
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+#topBtn {
+    top: 20px;
+    right: 20px;
+}
+
+#bottomBtn {
+    bottom: 10px;
+    right: 15px;
+}
+
+#topBtn:hover, #bottomBtn:hover {
+    background-color: #3a6239;
+}
+.button {
+    background-color: #489654;
+    border: none;
+    color: white;
+    padding: 16px 32px;
+    text-decoration: none;
+    margin: 20px;
+    cursor: pointer;
+    border-radius: 30px;
+    font-size: 1.2em;
+    transition: background-color 0.3s;
+}
+
+
+/* News letter */
+
+.ImgOverlay{
+    position: absolute;
+    top: 382%;
+    left: 9%;
+
+
+}
+
+.image-container {
+    width: 100%;
+    max-width: 700px;
+    position: absolute;
+    left: 50%;
+    top: 450%;
+    transform: translate(-50%);
+    z-index: 1;
+    text-align: center;
+
+}
+
+
+
+
+.image-container img {
+    width: 1251px;
+    height: 720px;
+    border-radius: 50px;
+    box-shadow: 0 50px 120px 0 rgba(0,0,0,.7)
+
+
+
+}
+
+.text-overlay {
+    position: absolute;
+    width: 100%;
+    left:150px;
+    top: 10%;
+    color: #489654;
+    font-size: 40px;
+    white-space: nowrap;
+}
+
+.signin{
+    position: absolute;
+    left: 65px;
+
+}
+#subscriptionForm {
+    position: absolute;
+    top: 400px;
+    left: 17px;
+    width: 265px;
+    height: 180px;
+    margin-right: 30px;
+    background-color: transparent;
+    padding: 50px;
+    display: flex;
+    flex-wrap: wrap;
+
+}
+
+#subscriptionForm input[type="text"],
+#subscriptionForm input[type="email"] {
+    position: relative;
+    width: 240px;
+    padding: 10px;
+    margin-bottom: 50px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+
+}
+#subscriptionForm input[type="text"]{
+    right: -58%;
+    top: -12%;
+
+}
+#subscriptionForm input[type="email"]{
+    left: 58%;
+    bottom: 48%;
+
+}
+.form-group{
+   margin-top: 9%;
+}
+
+#form-group1 label{
+    position: absolute;
+    right: 58%;
+    bottom:66% ;
+    font-size: 20px;
+    color: white;
+}
+#form-group2 label{
+    position: absolute;
+    right: 58%;
+    bottom:37% ;
+    font-size: 20px;
+    color: white;
+}
+#subscriptionForm button {
+    width: 190px;
+    padding: 10px;
+    background-color: #489654;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    position: absolute;
+    top: 85%;
+    left: 45%;
+    font-size: 17px;
+    display: inline-flex;
+    align-items: center;
+
+}
+#subscribeBtn span {
+    margin-right: 13px;
+    margin-left: 29px;
+}
+
+#subscriptionForm button:hover {
+    background-color: #3a6239;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    font-size: 14px;
+}
+.error {
+    color: red;
+    font-size: 18px;
+}
+
+#nameError{
+    position: absolute;
+    left: 68%;
+    bottom: 52%;
+    white-space: nowrap;
+}
+#emailError {
+    position: absolute;
+    left: 68%;
+    bottom: 24%;
+    white-space: nowrap;
+}
+
+
+.formText{
+
+    position: absolute;
+    left: 85px;
+    bottom: 50%;
+    color: #ffffff;
+    font-size: 16px;
+    white-space: nowrap;
+    z-index: 9999;
+    text-align: left;
+
+}
