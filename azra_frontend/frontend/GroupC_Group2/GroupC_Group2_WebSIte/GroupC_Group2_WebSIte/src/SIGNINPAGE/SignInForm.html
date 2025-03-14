@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=devive-width, initial-scale=1.0">
+    <title>Learn.com | Account</title>
+    <link rel="icon" href="learn.png" /><!--Sets favicon for webpage-->
+    <link rel="stylesheet" href="SignInForm.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body>
+<div class = "container" id="container"><!--Main container-->
+
+    <div class = "form-container sign-up">
+        <div id="progressBar" class="progress-bar"></div><!--Progress bar-->
+        <form action="#" name="SignUp" id="Signup">
+            <h1>Create Account</h1>
+            <div class="social-icons">
+                <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
+                <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
+                <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
+            </div>
+                <!--Name-->
+
+                <input type = "text" placeholder="Enter Name" id="name" >
+            
+            <!--Email-->
+            <input type="email" placeholder = "Enter Email" id = "email" >
+            <!--Password-->
+            <input type = "password" placeholder = "Enter Password" id="password" >
+            <!--Education-->
+            <input type = "text" placeholder="Enter Education" id="education" >
+            <!--Age-->
+            <input type = "number" placeholder="Enter Age" name="age" id="age" min="16">
+            <!--Preferred Learning-->
+            <input type="text" placeholder="Enter Preferred Learning Format(Online,Onsite)" name="PLF" id="PLF">
+            <p>By creating this account you agree to our <a href="#">Terms & Privacy</a></p>
+            <!--Submit and reset buttons-->
+            <button type = "submit" class="signUp" id="www">Sign Up</button>
+            <button  type="reset" class="reset">Reset</button>
+
+        </form>
+    </div>
+
+    <!--Sign in form-->
+    <div class = "form-container sign-in">
+        <form action="#" name="SignIn" id="Signin" class="form1">
+            <h1>Sign In</h1>
+            <div class="social-icons">
+                <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
+                <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
+                <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
+            </div>
+            <label>Email
+                <input type="email" placeholder = "Enter Email" name = "email" id="email1"></label>
+            <label>Password
+                <input type = "password" placeholder = "Enter Password" name="password" id="password1"></label>
+            <a href="#">Forgot your password?</a>
+            <button type = "submit" class="signIn" id="yyy">Sign In</button>
+        </form>
+    </div>
+
+    <!--toggle container for switching between sign up and sign in forms-->
+    <div class="toggle-container">
+        <div class="toggle">
+            <!--left toggle panel-->
+            <div class="toggle-panel toggle-left">
+                <div class="logo"></div>
+                <h1>Welcome back!</h1>
+                <p>Log In! Check out our newly released content.</p>
+                <button type = "submit" class="hidden" id="login">Log In</button>
+            </div>
+
+            <!--right toggle panel-->
+            <div class="toggle-panel toggle-right">
+                <div class="logo"></div>
+                <h1>New to Learn.com?</h1>
+                <p>Create an account to explore languages and content customized to your preference!</p>
+                <button type = "submit" class="hidden" id="register">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <!--alert container-->
+    <div class = "alert-container" id="alertContainer" style ="display: none">
+        <div class="alert-card">
+            <p id="alertText"></p>
+        </div>
+    </div>
+
+    <div class = "alert-container1" id="alertContainer1" style ="display: none">
+        <div class="alert-card1">
+            <p id="alertText1"></p>
+        </div>
+    </div>
+</div>
+
+<script src="SignInForm.js"></script>
+</body>
+
+</html>

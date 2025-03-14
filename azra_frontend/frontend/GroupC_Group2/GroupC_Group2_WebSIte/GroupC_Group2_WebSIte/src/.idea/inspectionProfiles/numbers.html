@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  <style>
+    #numbers-container {
+      display: flex; /* To display the numbers horizontally */
+      justify-content: space-around; /* To evenly space the numbers */
+      align-items: center; /* To vertically center the numbers */
+      font-size: 24px; /* Set the font size of the numbers */
+    }
+
+
+    .number {
+      padding: 10px; /* Add padding around each number */
+    }
+  </style>
+</head>
+<body>
+<div id="numbers-container"></div>
+<script>
+  const numbersContainer = document.getElementById("numbers-container");
+
+  // Array of numbers to display
+  const numbers = [32, 1000, 24, 100, 100];
+
+  // Loop through the numbers array and create elements for each number
+  numbers.forEach(number => {
+    const numberElement = document.createElement("div");
+    numberElement.classList.add("number");
+    numberElement.textContent = number;
+    numbersContainer.appendChild(numberElement);
+  });
+
+</script>
+
+
+</body>
+</html>
