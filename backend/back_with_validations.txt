@@ -1,0 +1,616 @@
+#1
+
+from flask import Flask, request, jsonify
+import tensorflow as tf
+import numpy as np
+import cv2
+import os
+from werkzeug.utils import secure_filename
+from tensorflow.keras.applications.resnet50 import preprocess_input, ResNet50
+from tensorflow.keras.layers import GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from flask_cors import CORS
+import traceback
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+CORS(app)
+
+# Model Paths
+PLANT_IDENTIFIER_MODEL = "plant_identification_full_model.h5"
+RICE_MODEL_PATH = "rice_full_model.h5"
+COFFEE_MODEL_PATH = "coffee_full_model_2.h5"
+BANANA_MODEL_PATH = "banana_full_model.h5"
+SEVERITY_MODEL_PATH = "FINALMODELforSeverity.h5"
+
+# Load all models with error handling
+try:
+    logger.info("Loading models...")
+    plant_identifier = tf.keras.models.load_model(PLANT_IDENTIFIER_MODEL)
+    rice_model = tf.keras.models.load_model(RICE_MODEL_PATH)
+    coffee_model = tf.keras.models.load_model(COFFEE_MODEL_PATH)
+    banana_model = tf.keras.models.load_model(BANANA_MODEL_PATH)
+    severity_model = tf.keras.models.load_model(SEVERITY_MODEL_PATH)
+
+    # Log the plant identifier model's output shape
+    logger.info(f"Plant identifier output shape: {plant_identifier.output_shape}")
+    num_classes = plant_identifier.output_shape[-1]
+    logger.info(f"Number of classes in plant identifier model: {num_classes}")
+
+    logger.info("All models loaded successfully")
+except Exception as e:
+    logger.error(f"Error loading models: {str(e)}")
+    logger.error(traceback.format_exc())
+    raise
+
+# Set up ResNet50 feature extractor for severity model
+try:
+    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    feature_extractor = Model(inputs=base_model.input, outputs=x)
+    logger.info("Feature extractor set up successfully")
+except Exception as e:
+    logger.error(f"Error setting up feature extractor: {str(e)}")
+    logger.error(traceback.format_exc())
+    raise
+
+# Update this based on your actual model's classes
+# These should match exactly with how your model was trained
+PLANT_CLASSES = [
+    "Banana",  # Update these class names to match your model's training data
+    "Coffee",  # Make sure they're in the same order as during training
+    "Rice"  # Removed Wheat as there's no deficiency finder for it
+]
+
+logger.info(f"Configured plant classes: {PLANT_CLASSES}")
+
+DEFICIENCY_CLASSES = {
+    "Rice": ["Nitrogen(N)", "Phosphorus(P)", "Potassium(K)"],
+    "Coffee": ["iron-Fe", "magnesium-Mg", "potasium-K","other"],
+    "Banana": ["iron", "magnesium", "potassium"]
+}
+SEVERITY_CLASSES = ["Mild", "Moderate", "Severe"]
+
+# Set up upload folder
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["ALLOWED_EXTENSIONS"] = {"png", "jpg", "jpeg"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
+
+def preprocess_image(image_path, target_size=(224, 224)):
+    try:
+        image = cv2.imread(image_path)
+        if image is None:
+            raise ValueError(f"Failed to load image at {image_path}")
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, target_size)
+        image = np.array(image, dtype=np.float32)
+        image = np.expand_dims(image, axis=0)
+        image = preprocess_input(image)
+        return image
+    except Exception as e:
+        logger.error(f"Error preprocessing image: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+
+def get_deficiency_model(plant_type):
+    try:
+        # Convert to title case for consistency
+        plant_type = plant_type.title()
+        if plant_type in DEFICIENCY_CLASSES:
+            if plant_type == "Rice":
+                return rice_model, DEFICIENCY_CLASSES[plant_type]
+            elif plant_type == "Coffee":
+                return coffee_model, DEFICIENCY_CLASSES[plant_type]
+            elif plant_type == "Banana":
+                return banana_model, DEFICIENCY_CLASSES[plant_type]
+        raise ValueError(f"No deficiency model available for plant type: {plant_type}")
+    except Exception as e:
+        logger.error(f"Error getting deficiency model: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(file_path)
+            logger.info(f"File saved successfully at {file_path}")
+
+            try:
+                # Step 1: Identify the plant
+                logger.info("Starting plant identification")
+                plant_image = preprocess_image(file_path)
+                plant_predictions = plant_identifier.predict(plant_image)
+
+                # Log the prediction array for debugging
+                logger.info(f"Plant predictions array: {plant_predictions}")
+                logger.info(f"Plant predictions shape: {plant_predictions.shape}")
+
+                plant_class_idx = np.argmax(plant_predictions)
+                logger.info(f"Predicted plant class index: {plant_class_idx}")
+
+                if plant_class_idx >= len(PLANT_CLASSES):
+                    raise ValueError(
+                        f"Model predicted class index {plant_class_idx} but we only have {len(PLANT_CLASSES)} classes configured")
+
+                plant_type = PLANT_CLASSES[plant_class_idx]
+                plant_confidence = float(plant_predictions[0][plant_class_idx])
+                logger.info(f"Plant identified as: {plant_type} with confidence: {plant_confidence}")
+
+                # Only proceed with deficiency and severity analysis for supported plants
+                if plant_type.title() not in DEFICIENCY_CLASSES:
+                    return jsonify({
+                        "plant": {
+                            "type": plant_type,
+                            "confidence": plant_confidence
+                        },
+                        "message": f"Deficiency analysis not available for {plant_type}"
+                    })
+
+                # Step 2: Get appropriate deficiency model and predict deficiency
+                logger.info(f"Getting deficiency model for {plant_type}")
+                deficiency_model, deficiency_labels = get_deficiency_model(plant_type)
+                deficiency_predictions = deficiency_model.predict(plant_image)
+                deficiency_class_idx = np.argmax(deficiency_predictions)
+                deficiency_type = deficiency_labels[deficiency_class_idx]
+                deficiency_confidence = float(deficiency_predictions[0][deficiency_class_idx])
+                logger.info(f"Deficiency identified as: {deficiency_type}")
+
+                # Handle "other" class for Coffee
+                if plant_type == "Coffee" and deficiency_type == "other":
+                    return jsonify({
+                        "plant": {
+                            "type": plant_type,
+                            "confidence": plant_confidence
+                        },
+                        "deficiency": {
+                            "type": "Unknown Deficiency",
+                            "message": "The image shows either a healthy plant or a deficiency type that is not currently detectable by the system.",
+                            "confidence": deficiency_confidence
+                        },
+                        "severity": {
+                            "level": "Not Applicable",
+                            "confidence": 1.0
+                        }
+                    })
+
+                # Step 3: Predict severity only for known deficiencies
+                logger.info("Predicting severity")
+                features = feature_extractor.predict(plant_image)
+                severity_predictions = severity_model.predict(features)
+                severity_class_idx = np.argmax(severity_predictions)
+                severity_level = SEVERITY_CLASSES[severity_class_idx]
+                severity_confidence = float(severity_predictions[0][severity_class_idx])
+                logger.info(f"Severity level identified as: {severity_level}")
+
+                # Clean up
+                os.remove(file_path)
+                logger.info("Temporary file removed")
+
+                return jsonify({
+                    "plant": {
+                        "type": plant_type,
+                        "confidence": plant_confidence
+                    },
+                    "deficiency": {
+                        "type": deficiency_type,
+                        "confidence": deficiency_confidence
+                    },
+                    "severity": {
+                        "level": severity_level,
+                        "confidence": severity_confidence
+                    }
+                })
+
+            except Exception as e:
+                logger.error(f"Error during prediction: {str(e)}")
+                logger.error(traceback.format_exc())
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return jsonify({"error": str(e)}), 500
+
+        return jsonify({"error": "Invalid file type"}), 400
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+JavaScript:
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('upload-form');
+    const fileInput = document.getElementById('file-input');
+    const previewContainer = document.getElementById('preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const removeButton = document.getElementById('remove-image');
+
+    // Plant data object (Add the entire JSON data here)
+    const plantData = {
+        
+            "soil_preferences": {
+              "Banana": {
+                "pH_range": [5.5, 7.0],
+                "suitable_soils": ["Loamy", "Clay"]
+              },
+              "Coffee": {
+                "pH_range": [5.0, 6.5],
+                "suitable_soils": ["Loamy", "Sandy"]
+              },
+              "Rice": {
+                "pH_range": [5.5, 7.5],
+                "suitable_soils": ["Clay", "Loamy"]
+              }
+            },
+            "plant_conditions": {
+              "Banana": {
+                "temp_range": [18, 30],
+                "humidity_range": [50, 80]
+              },
+              "Coffee": {
+                "temp_range": [15, 28],
+                "humidity_range": [60, 90]
+              },
+              "Rice": {
+                "temp_range": [20, 35],
+                "humidity_range": [70, 100]
+              }
+            },
+            "nutrient_requirements": {
+              "Banana": {
+                "N": 200,
+                "P": 60,
+                "K": 350
+              },
+              "Coffee": {
+                "N": 150,
+                "P": 50,
+                "K": 200
+              },
+              "Rice": {
+                "N": 100,
+                "P": 40,
+                "K": 150
+              }
+            },
+            "fertilizer_recommendations": {
+              "Nitrogen": {
+                "Mild": "Apply 20-30 kg/ha of urea as a foliar spray.",
+                "Moderate": "Apply 50 kg/ha of urea in split doses.",
+                "Severe": "Apply 80-100 kg/ha of urea with soil incorporation."
+              },
+              "Phosphorus": {
+                "Mild": "Apply 15-25 kg/ha of superphosphate.",
+                "Moderate": "Apply 40 kg/ha of superphosphate.",
+                "Severe": "Apply 60 kg/ha of superphosphate, deep placement."
+              },
+              "Potassium": {
+                "Mild": "Foliar spray of 2% KCl weekly until symptoms disappear.",
+                "Moderate": "Apply 40 kg/ha of K2O and monitor plant response.",
+                "Severe": "Apply 80 kg/ha of K2O and incorporate into the soil."
+              },
+              "Magnesium": {
+                "Mild": "Foliar spray of 5% MgSO4 or dolomite limestone at 3 t/ha.",
+                "Moderate": "Apply 30-50 kg/ha of MgSO4 to the soil.",
+                "Severe": "Apply 100 kg/ha of MgSO4 with irrigation water."
+              },
+              "Iron": {
+                "Mild": "Soil application of FeSO4 (5 g/ha) or foliar spray of 0.5% FeSO4 weekly.",
+                "Moderate": "Apply 10 g/ha of FeSO4 to the soil and monitor symptoms.",
+                "Severe": "Apply chelated iron (EDDHA-Fe) for rapid correction."
+              }
+            },
+            "plant_deficiency_map": {
+              "Banana": ["Magnesium", "Iron", "Potassium"],
+              "Coffee": ["Magnesium", "Iron", "Potassium"],
+              "Rice": ["Nitrogen", "Phosphorus", "Potassium"]
+            },
+            "severity_levels": ["Mild", "Moderate", "Severe"],
+            "fertilizer_application_guidelines": {
+              "Application_Methods": {
+                "Even_Precise_Spreading": "Use calibrated spreaders and perform tray tests to ensure even distribution.",
+                "Split_Applications": {
+                  "Nitrogen": "Apply in multiple splits—50% before transplanting, 25% at 30 days, 25% at panicle initiation.",
+                  "Phosphorus_Potassium_Zinc": "Typically applied as a basal dose."
+                },
+                "Equipment_Conditions": "Adjust spreader settings based on weather to avoid uneven application."
+              },
+              "General_Best_Practices": {
+                "Quality_Consistency": "Use high-quality fertilizers and store them properly.",
+                "Timing_Precision": "Apply nutrients when crops need them most.",
+                "Zone_Specific_Recommendations": "Follow field zone-based tables for tailored application rates."
+              }
+            }
+          
+    };
+
+    // Handle file selection
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Handle image removal
+    removeButton.addEventListener('click', function() {
+        fileInput.value = '';
+        previewContainer.style.display = 'none';
+        imagePreview.src = '#';
+    });
+
+    // Function to update result display
+    function updateResult(elementId, label, value, confidence) {
+        const element = document.getElementById(elementId);
+        const confidenceBar = document.getElementById(elementId.split('-')[0] + '-confidence');
+        
+        if (element && confidenceBar) {
+            if (value === "Unknown Deficiency") {
+                element.textContent = `${label}: ${value}`;
+                element.innerHTML += `<span class="confidence-text">(${(confidence * 100).toFixed(1)}% confidence)</span>`;
+                element.innerHTML += `<br><small class="text-muted">This may be a healthy plant or a deficiency type not currently detectable by the system.</small>`;
+                
+                // Hide the detailed report for unknown deficiencies
+                document.getElementById('detailed-report').classList.remove('visible');
+            } else {
+                // Your existing code for known deficiencies
+                element.textContent = `${label}: ${value}`;
+                const confidencePercent = (confidence * 100).toFixed(1);
+                element.innerHTML += `<span class="confidence-text">(${confidencePercent}% confidence)</span>`;
+                confidenceBar.innerHTML = `<div class="confidence-fill" style="width: ${confidencePercent}%"></div>`;
+            }
+        } else {
+            console.error('Could not find elements:', elementId, confidenceBar);
+        }
+    }
+
+    function generateDetailedReport(plantType, deficiencyType, severityLevel) {
+        const report = document.getElementById('detailed-report');
+        
+        // Don't generate report for unknown deficiencies
+        if (deficiencyType === "Unknown Deficiency") {
+            if (report) {
+                report.classList.remove('visible');
+            }
+            return;
+        }
+
+        if (!plantData.soil_preferences[plantType]) {
+            console.error('Plant type not found in data:', plantType);
+            return;
+        }
+
+        // Soil Preferences
+        const soilPrefs = plantData.soil_preferences[plantType];
+        const soilPrefsElement = document.getElementById('soil-preferences');
+        if (soilPrefsElement) {
+            soilPrefsElement.innerHTML = `
+                <ul class="report-list">
+                    <li>pH Range: ${soilPrefs.pH_range[0]} - ${soilPrefs.pH_range[1]}</li>
+                    <li>Suitable Soils: ${soilPrefs.suitable_soils.join(', ')}</li>
+                </ul>
+            `;
+        }
+
+        // Growing Conditions
+        const conditions = plantData.plant_conditions[plantType];
+        const growingConditionsElement = document.getElementById('growing-conditions');
+        if (growingConditionsElement) {
+            growingConditionsElement.innerHTML = `
+                <ul class="report-list">
+                    <li>Temperature: ${conditions.temp_range[0]}°C - ${conditions.temp_range[1]}°C</li>
+                    <li>Humidity: ${conditions.humidity_range[0]}% - ${conditions.humidity_range[1]}%</li>
+                </ul>
+            `;
+        }
+
+        // Nutrient Requirements
+        const nutrients = plantData.nutrient_requirements[plantType];
+        const nutrientReqElement = document.getElementById('nutrient-requirements');
+        if (nutrientReqElement) {
+            nutrientReqElement.innerHTML = `
+                <div class="report-grid">
+                    <div class="report-item">
+                        <h4>Recommended Nutrient Levels (kg/ha)</h4>
+                        <ul class="report-list">
+                            <li>Nitrogen (N): ${nutrients.N}</li>
+                            <li>Phosphorus (P): ${nutrients.P}</li>
+                            <li>Potassium (K): ${nutrients.K}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Treatment Recommendations
+        
+        let deficiencyKey = deficiencyType;
+        // Handle different formats of deficiency types
+        if (deficiencyType.includes('(')) {
+            deficiencyKey = deficiencyType.split('(')[0].trim(); // Handle format like "Nitrogen(N)"
+        } else if (deficiencyType.includes('-')) {
+            deficiencyKey = deficiencyType.split('-')[0].trim(); // Handle format like "nitrogen-N"
+        }
+        // Capitalize first letter to match JSON keys
+        deficiencyKey = deficiencyKey.charAt(0).toUpperCase() + deficiencyKey.slice(1);
+
+        const fertilizer = plantData.fertilizer_recommendations[deficiencyKey];
+        const treatmentRecsElement = document.getElementById('treatment-recommendations');
+        if (treatmentRecsElement && fertilizer) {
+            treatmentRecsElement.innerHTML = `
+                <div class="report-item">
+                    <h4>${deficiencyType} Deficiency Treatment (${severityLevel})</h4>
+                    <p>${fertilizer[severityLevel]}</p>
+                </div>
+            `;
+        } else {
+            console.log('Treatment data not found for:', deficiencyKey, severityLevel);
+            treatmentRecsElement.innerHTML = `
+                <div class="report-item">
+                    <h4>Treatment Information Unavailable</h4>
+                    <p>No specific treatment information available for ${deficiencyType} deficiency.</p>
+                </div>
+            `;
+        }
+        
+
+        // Application Guidelines
+        const guidelines = plantData.fertilizer_application_guidelines;
+        const guidelinesElement = document.getElementById('application-guidelines');
+        if (guidelinesElement) {
+            guidelinesElement.innerHTML = `
+                <div class="report-grid">
+                    <div class="report-item">
+                        <h4>Application Methods</h4>
+                        <ul class="report-list">
+                            <li>${guidelines.Application_Methods.Even_Precise_Spreading}</li>
+                            <li>${guidelines.Application_Methods.Split_Applications.Nitrogen}</li>
+                        </ul>
+                    </div>
+                    <div class="report-item">
+                        <h4>Best Practices</h4>
+                        <ul class="report-list">
+                            <li>${guidelines.General_Best_Practices.Quality_Consistency}</li>
+                            <li>${guidelines.General_Best_Practices.Timing_Precision}</li>
+                            <li>${guidelines.General_Best_Practices.Zone_Specific_Recommendations}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (report) {
+            report.classList.add('visible');
+        }
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        
+        try {
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('detailed-report').classList.remove('visible');
+            
+            const response = await fetch('http://localhost:5000/predict', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            const data = await response.json();
+            
+            // Hide loading state
+            document.getElementById('loading').style.display = 'none';
+            
+            // Show results
+            if (data.error) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = data.error;
+                return;
+            }
+            
+            document.getElementById('results').style.display = 'block';
+            
+            // Update results display
+            updateResult('plant-type', 'Plant Type', data.plant.type, data.plant.confidence);
+            updateResult('deficiency-type', 'Deficiency', data.deficiency.type, data.deficiency.confidence);
+            updateResult('severity-level', 'Severity', data.severity.level, data.severity.confidence);
+            
+            // Generate detailed report
+            generateDetailedReport(
+                data.plant.type,
+                data.deficiency.type,
+                data.severity.level
+            );
+            
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = 'Error processing image. Please try again.';
+        }
+    });
+
+    // Add drag and drop handlers (your existing code)
+    const dropZone = document.querySelector('.file-upload label');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('highlight');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('highlight');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        fileInput.files = dt.files;
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+});
+
