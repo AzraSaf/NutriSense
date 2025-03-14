@@ -1,0 +1,1389 @@
+from flask import Flask, request, jsonify
+import tensorflow as tf
+import numpy as np
+import cv2
+import os
+import json
+import requests
+import openmeteo_requests
+import requests_cache
+from retry_requests import retry
+from werkzeug.utils import secure_filename
+from tensorflow.keras.applications.resnet50 import preprocess_input, ResNet50
+from tensorflow.keras.layers import GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from flask_cors import CORS
+import traceback
+import logging
+from datetime import datetime
+
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+CORS(app)
+
+# Configuration
+UPLOAD_FOLDER = "uploads"
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Define confidence thresholds
+CONFIDENCE_THRESHOLDS = {
+    "plant": 0.70,      # 70% confidence threshold for plant identification
+    "deficiency": 0.65, # 65% confidence threshold for deficiency detection
+    "severity": 0.60    # 60% confidence threshold for severity assessment
+}
+
+def allowed_file(filename):
+    """Check if the file extension is allowed."""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def preprocess_image(image_path, target_size=(224, 224)):
+    """Preprocess image for model input."""
+    try:
+        image = cv2.imread(image_path)
+        if image is None:
+            raise ValueError(f"Failed to load image at {image_path}")
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, target_size)
+        image = np.array(image, dtype=np.float32)
+        image = np.expand_dims(image, axis=0)
+        image = preprocess_input(image)
+        return image
+    except Exception as e:
+        logger.error(f"Error preprocessing image: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+
+def get_deficiency_model(plant_type):
+    """Get appropriate deficiency model for plant type."""
+    try:
+        plant_type = plant_type.title()
+        if plant_type in DEFICIENCY_CLASSES:
+            if plant_type == "Rice":
+                return rice_model, DEFICIENCY_CLASSES[plant_type]
+            elif plant_type == "Coffee":
+                return coffee_model, DEFICIENCY_CLASSES[plant_type]
+            elif plant_type == "Banana":
+                return banana_model, DEFICIENCY_CLASSES[plant_type]
+        raise ValueError(f"No deficiency model available for plant type: {plant_type}")
+    except Exception as e:
+        logger.error(f"Error getting deficiency model: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+
+# Load domain knowledge
+with open('domain_knowledge.json', 'r') as f:
+    DOMAIN_KNOWLEDGE = json.load(f)
+
+# API configurations
+IPSTACK_API_KEY = "fb37b41e83988cac48252059149897f6"
+IPSTACK_URL = f"http://api.ipstack.com/check?access_key={IPSTACK_API_KEY}"
+
+# Setup weather API
+cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
+retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+openmeteo = openmeteo_requests.Client(session=retry_session)
+
+# Model Paths
+PLANT_IDENTIFIER_MODEL = "plant_identification_full_model.h5"
+RICE_MODEL_PATH = "rice_full_model.h5"
+COFFEE_MODEL_PATH = "coffee_full_model.h5"
+BANANA_MODEL_PATH = "banana_full_model.h5"
+SEVERITY_MODEL_PATH = "FINALMODELforSeverity.h5"
+
+# Load all models with error handling
+try:
+    logger.info("Loading models...")
+    plant_identifier = tf.keras.models.load_model(PLANT_IDENTIFIER_MODEL)
+    rice_model = tf.keras.models.load_model(RICE_MODEL_PATH)
+    coffee_model = tf.keras.models.load_model(COFFEE_MODEL_PATH)
+    banana_model = tf.keras.models.load_model(BANANA_MODEL_PATH)
+    severity_model = tf.keras.models.load_model(SEVERITY_MODEL_PATH)
+
+    logger.info(f"Plant identifier output shape: {plant_identifier.output_shape}")
+    num_classes = plant_identifier.output_shape[-1]
+    logger.info(f"Number of classes in plant identifier model: {num_classes}")
+    logger.info("All models loaded successfully")
+except Exception as e:
+    logger.error(f"Error loading models: {str(e)}")
+    logger.error(traceback.format_exc())
+    raise
+
+# Set up ResNet50 feature extractor for severity model
+try:
+    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    feature_extractor = Model(inputs=base_model.input, outputs=x)
+    logger.info("Feature extractor set up successfully")
+except Exception as e:
+    logger.error(f"Error setting up feature extractor: {str(e)}")
+    logger.error(traceback.format_exc())
+    raise
+
+# Plant classes and deficiency mappings
+PLANT_CLASSES = ["Banana", "Coffee", "Rice"]
+
+DEFICIENCY_CLASSES = {
+    "Rice": ["Nitrogen(N)", "Phosphorus(P)", "Potassium(K)"],
+    "Coffee": ["iron-Fe", "magnesium-Mg", "potasium-K"],
+    "Banana": ["iron", "magnesium", "potassium"]
+}
+
+SEVERITY_CLASSES = ["Mild", "Moderate", "Severe"]
+
+# Helper functions for location and weather
+def get_user_location():
+    try:
+        response = requests.get(IPSTACK_URL)
+        data = response.json()
+        lat = data.get('latitude')
+        lon = data.get('longitude')
+        city = data.get('city', 'Unknown')
+        if lat is None or lon is None:
+            raise ValueError("Invalid location data returned from IP Stack.")
+        return lat, lon, city
+    except Exception as e:
+        logger.error(f"Error fetching location: {e}")
+        return None, None, "Unknown"
+
+def get_weather_data(lat, lon):
+    try:
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "current": ["temperature_2m", "relative_humidity_2m"]
+        }
+        responses = openmeteo.weather_api(url, params=params)
+        response = responses[0]
+        current = response.Current()
+        temperature = current.Variables(0).Value()
+        humidity = current.Variables(1).Value()
+        return humidity, temperature
+    except Exception as e:
+        logger.error(f"Error fetching weather data: {e}")
+        return None, None
+
+
+# Additional helper functions for main backend
+def check_environmental_conditions(plant_type, temperature, humidity):
+    plant_conditions = DOMAIN_KNOWLEDGE["plant_conditions"].get(plant_type, {})
+    if not plant_conditions:
+        return "Environmental conditions data not available for this plant type"
+
+    temp_range = plant_conditions.get("temp_range", [])
+    humidity_range = plant_conditions.get("humidity_range", [])
+
+    if temp_range and humidity_range:
+        temp_ok = temp_range[0] <= temperature <= temp_range[1]
+        humidity_ok = humidity_range[0] <= humidity <= humidity_range[1]
+
+        if temp_ok and humidity_ok:
+            return f"✅ Optimal: Temperature ({temperature}°C) and Humidity ({humidity}%) are within ideal ranges"
+        else:
+            return f"⚠️ Suboptimal: Ideal ranges are {temp_range[0]}-{temp_range[1]}°C and {humidity_range[0]}-{humidity_range[1]}% humidity"
+    return "Could not determine environmental suitability"
+
+
+def check_soil_suitability(plant_type, soil_type):
+    soil_preferences = DOMAIN_KNOWLEDGE["soil_preferences"].get(plant_type, {})
+    if not soil_preferences:
+        return "Soil preference data not available for this plant type"
+
+    suitable_soils = soil_preferences.get("suitable_soils", [])
+    if soil_type in suitable_soils:
+        return f"✅ Suitable: {soil_type} soil is ideal for {plant_type}"
+    else:
+        return f"⚠️ Not Ideal: {plant_type} prefers {', '.join(suitable_soils)} soil"
+
+
+def get_fertilizer_recommendation(deficiency_type, severity_level):
+    recommendations = DOMAIN_KNOWLEDGE["fertilizer_recommendations"]
+    if deficiency_type not in recommendations:
+        deficiency_type = deficiency_type.split('(')[0].strip()  # Handle format like "Nitrogen(N)"
+        deficiency_type = deficiency_type.split('-')[0].strip()  # Handle format like "iron-Fe"
+        deficiency_type = deficiency_type.capitalize()
+
+    if deficiency_type in recommendations:
+        return recommendations[deficiency_type].get(severity_level, "No specific recommendation available")
+    return "No recommendation available for this deficiency type"
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+
+        file = request.files["file"]
+        soil_type = request.form.get('soil_type', 'Unknown')  # Get soil type if provided
+
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(file_path)
+            logger.info(f"File saved successfully at {file_path}")
+
+            try:
+                # Get location and weather data
+                lat, lon, city = get_user_location()
+                humidity, temperature = get_weather_data(lat, lon) if lat and lon else (None, None)
+
+                # Step 1: Plant Identification with validation
+                logger.info("Starting plant identification")
+                plant_image = preprocess_image(file_path)
+                plant_predictions = plant_identifier.predict(plant_image)
+
+                plant_class_idx = np.argmax(plant_predictions)
+                plant_confidence = float(plant_predictions[0][plant_class_idx])
+
+                # Validate plant confidence
+                if plant_confidence < CONFIDENCE_THRESHOLDS["plant"]:
+                    return jsonify({
+                        "plant": {
+                            "type": "Unknown",
+                            "confidence": plant_confidence,
+                            "message": "Unable to identify plant type with sufficient confidence"
+                        },
+                        "deficiency": {
+                            "type": "Unknown",
+                            "confidence": 0.0
+                        },
+                        "severity": {
+                            "level": "Unknown",
+                            "confidence": 0.0
+                        }
+                    })
+
+                plant_type = PLANT_CLASSES[plant_class_idx]
+                logger.info(f"Plant identified as: {plant_type} with confidence: {plant_confidence}")
+
+                # Step 2: Deficiency Analysis
+                deficiency_model, deficiency_labels = get_deficiency_model(plant_type)
+                deficiency_predictions = deficiency_model.predict(plant_image)
+                deficiency_class_idx = np.argmax(deficiency_predictions)
+                deficiency_confidence = float(deficiency_predictions[0][deficiency_class_idx])
+
+                # Validate deficiency confidence
+                if deficiency_confidence < CONFIDENCE_THRESHOLDS["deficiency"]:
+                    deficiency_type = "Unknown"
+                    deficiency_message = "Unable to identify deficiency with sufficient confidence"
+                else:
+                    deficiency_type = deficiency_labels[deficiency_class_idx]
+                    deficiency_message = None
+
+                # Step 3: Severity Analysis
+                features = feature_extractor.predict(plant_image)
+                severity_predictions = severity_model.predict(features)
+                severity_class_idx = np.argmax(severity_predictions)
+                severity_confidence = float(severity_predictions[0][severity_class_idx])
+
+                # Validate severity confidence
+                if severity_confidence < CONFIDENCE_THRESHOLDS["severity"]:
+                    severity_level = "Unknown"
+                    severity_message = "Unable to determine severity with sufficient confidence"
+                else:
+                    severity_level = SEVERITY_CLASSES[severity_class_idx]
+                    severity_message = None
+
+                # Get environmental analysis
+                env_status = check_environmental_conditions(plant_type, temperature,
+                                                            humidity) if temperature and humidity else "Weather data unavailable"
+                soil_status = check_soil_suitability(plant_type,
+                                                     soil_type) if soil_type != "Unknown" else "Soil type not provided"
+
+                # Get fertilizer recommendation
+                fertilizer_rec = get_fertilizer_recommendation(deficiency_type,
+                                                               severity_level) if deficiency_type != "Unknown" else "Cannot provide recommendation without valid deficiency type"
+
+                # Clean up
+                os.remove(file_path)
+                logger.info("Temporary file removed")
+
+                # Prepare response
+                response = {
+                    "plant": {
+                        "type": plant_type,
+                        "confidence": plant_confidence
+                    },
+                    "deficiency": {
+                        "type": deficiency_type,
+                        "confidence": deficiency_confidence,
+                        "message": deficiency_message
+                    },
+                    "severity": {
+                        "level": severity_level,
+                        "confidence": severity_confidence,
+                        "message": severity_message
+                    },
+                    "environmental_analysis": {
+                        "location": city,
+                        "temperature": temperature,
+                        "humidity": humidity,
+                        "status": env_status
+                    },
+                    "soil_analysis": {
+                        "soil_type": soil_type,
+                        "status": soil_status
+                    },
+                    "recommendation": {
+                        "treatment": fertilizer_rec,
+                        "guidelines": DOMAIN_KNOWLEDGE["fertilizer_application_guidelines"]
+                    },
+                    "timestamp": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                }
+
+                return jsonify(response)
+
+            except Exception as e:
+                logger.error(f"Error during prediction: {str(e)}")
+                logger.error(traceback.format_exc())
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return jsonify({"error": str(e)}), 500
+
+        return jsonify({"error": "Invalid file type"}), 400
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+Front end:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Nutrient Deficiency Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Plant Nutrient Deficiency Analyzer</h1>
+            <p class="subtitle">Upload a plant leaf image to analyze its nutrient deficiency</p>
+        </header>
+
+        <main>
+            <form id="upload-form" class="upload-section">
+                <div class="file-upload">
+                    <input type="file" id="file-input" name="file" accept="image/*" required>
+                    <label for="file-input">
+                        <div class="upload-icon">📸</div>
+                        <span>Choose an image or drag it here</span>
+                    </label>
+                    <div id="preview-container" class="preview-container" style="display: none;">
+                        <img id="image-preview" src="#" alt="Preview">
+                        <button type="button" id="remove-image" class="remove-button">×</button>
+                    </div>
+                </div>
+                <button type="submit" class="analyze-button">Analyze Image</button>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing image...</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="results" class="results" style="display: none;">
+                <div class="result-card">
+                    <h2>Analysis Results</h2>
+                    <div class="result-item">
+                        <p id="plant-type" class="result-text"></p>
+                        <div id="plant-confidence" class="confidence-bar"></div>
+                    </div>
+                    <div class="result-item">
+                        <p id="deficiency-type" class="result-text"></p>
+                        <div id="deficiency-confidence" class="confidence-bar"></div>
+                    </div>
+                    <div class="result-item">
+                        <p id="severity-level" class="result-text"></p>
+                        <div id="severity-confidence" class="confidence-bar"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add this after your results section in your HTML -->
+            <div id="soil-selection" class="soil-selection" style="display: none;">
+                <div class="soil-selection-card">
+                    <h2>Select Soil Type</h2>
+                    <p class="subtitle">This helps us provide more accurate recommendations</p>
+                    <div class="soil-options" id="soilOptions">
+                        <div class="soil-option" data-soil="Clay">
+                            <span class="soil-emoji">🏺</span>
+                            <span>Clay</span>
+                        </div>
+                        <div class="soil-option" data-soil="Loamy">
+                            <span class="soil-emoji">🌱</span>
+                            <span>Loamy</span>
+                        </div>
+                        <div class="soil-option" data-soil="Sandy">
+                            <span class="soil-emoji">🏖️</span>
+                            <span>Sandy</span>
+                        </div>
+                    </div>
+                    <button id="submitSoilType" class="analyze-button">Continue Analysis</button>
+                </div>
+            </div>
+
+
+            <div id="detailed-report" class="detailed-report">
+                <div class="report-card">
+                    <h2>Detailed Plant Report</h2>
+                    <div class="report-section">
+                        <h3>Soil & Growing Conditions</h3>
+                        <div class="report-grid">
+                            <div class="report-item">
+                                <h4>Soil Preferences</h4>
+                                <div id="soil-preferences"></div>
+                            </div>
+                            <div class="report-item">
+                                <h4>Optimal Conditions</h4>
+                                <div id="growing-conditions"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Nutrient Requirements</h3>
+                        <div id="nutrient-requirements"></div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Treatment Recommendations</h3>
+                        <div id="treatment-recommendations"></div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Application Guidelines</h3>
+                        <div id="application-guidelines"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+
+        <footer>
+            <p>Developed by Team Plant Nutrient Analyzer</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+:root {
+    --primary-color: #2c7a4e;
+    --secondary-color: #4CAF50;
+    --background-color: #f5f5f5;
+    --text-color: #333;
+    --error-color: #ff4444;
+    --success-color: #00C851;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.upload-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.file-upload {
+    position: relative;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.file-upload input[type="file"] {
+    display: none;
+}
+
+.file-upload label {
+    display: block;
+    padding: 2rem;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload label:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(44, 122, 78, 0.05);
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.preview-container {
+    position: relative;
+    margin-top: 1rem;
+}
+
+.preview-container img {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+}
+
+.remove-button {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.analyze-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.analyze-button:hover {
+    background-color: var(--secondary-color);
+}
+
+.loading {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error {
+    color: var(--error-color);
+    text-align: center;
+    padding: 1rem;
+    background-color: rgba(255, 68, 68, 0.1);
+    border-radius: 5px;
+    margin: 1rem 0;
+}
+
+.results {
+    margin-top: 2rem;
+}
+
+.result-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.result-card h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.result-item {
+    margin-bottom: 1.5rem;
+}
+
+.result-text {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.confidence-bar {
+    height: 10px;
+    background-color: #eee;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.confidence-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--success-color);
+    transition: width 0.3s ease;
+}
+
+footer {
+    text-align: center;
+    margin-top: 3rem;
+    color: #666;
+}
+
+/* Add these to your existing CSS */
+.confidence-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-left: 10px;
+}
+
+.confidence-fill {
+    height: 100%;
+    background-color: var(--success-color);
+    transition: width 0.3s ease;
+}
+
+/* Add this section for the detailed report */
+.detailed-report {
+    margin-top: 2rem;
+    display: none;
+}
+
+.detailed-report.visible {
+    display: block;
+}
+
+.report-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+}
+
+.report-section {
+    margin-bottom: 1.5rem;
+}
+
+.report-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.5rem;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.report-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+.report-item h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.report-list {
+    list-style: none;
+    padding: 0;
+}
+
+.report-list li {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.report-list li:before {
+    content: "•";
+    color: var(--secondary-color);
+    position: absolute;
+    left: 0;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .upload-section {
+        padding: 1rem;
+    }
+
+    .preview-container img {
+        max-width: 100%;
+    }
+}
+
+/* Add to your existing CSS */
+.soil-selection {
+    margin-top: 2rem;
+}
+
+.soil-selection-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.soil-selection-card h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.soil-selection-card .subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.soil-options {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.soil-emoji {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.soil-option {
+    cursor: pointer;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 2px solid #eee;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 120px;
+}
+
+.soil-option:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(44, 122, 78, 0.05);
+}
+
+.soil-option.active {
+    border-color: var(--primary-color);
+    background-color: rgba(44, 122, 78, 0.1);
+}
+
+.soil-option img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+}
+
+.soil-option span {
+    display: block;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Environmental Analysis Section */
+.environmental-status {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.environmental-status h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 4px;
+}
+
+/* Add to your existing CSS */
+.report-timestamp {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.environmental-context {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.environmental-context ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+}
+
+.environmental-context li {
+    padding: 0.3rem 0;
+    color: #666;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('upload-form');
+    const fileInput = document.getElementById('file-input');
+    const previewContainer = document.getElementById('preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const removeButton = document.getElementById('remove-image');
+    let selectedSoilType = null;
+    let initialAnalysisData = null;
+    const currentUser = 'Muh-Ayyub';
+    const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    // Plant data object
+    const plantData = {
+        "soil_preferences": {
+            "Banana": {
+                "pH_range": [5.5, 7.0],
+                "suitable_soils": ["Loamy", "Clay"]
+            },
+            "Coffee": {
+                "pH_range": [5.0, 6.5],
+                "suitable_soils": ["Loamy", "Sandy"]
+            },
+            "Rice": {
+                "pH_range": [5.5, 7.5],
+                "suitable_soils": ["Clay", "Loamy"]
+            }
+        },
+        "plant_conditions": {
+            "Banana": {
+                "temp_range": [18, 30],
+                "humidity_range": [50, 80]
+            },
+            "Coffee": {
+                "temp_range": [15, 28],
+                "humidity_range": [60, 90]
+            },
+            "Rice": {
+                "temp_range": [20, 35],
+                "humidity_range": [70, 100]
+            }
+        },
+        "nutrient_requirements": {
+            "Banana": {
+                "N": 200,
+                "P": 60,
+                "K": 350
+            },
+            "Coffee": {
+                "N": 150,
+                "P": 50,
+                "K": 200
+            },
+            "Rice": {
+                "N": 100,
+                "P": 40,
+                "K": 150
+            }
+        },
+        "fertilizer_recommendations": {
+            "Nitrogen": {
+                "Mild": "Apply 20-30 kg/ha of urea as a foliar spray.",
+                "Moderate": "Apply 50 kg/ha of urea in split doses.",
+                "Severe": "Apply 80-100 kg/ha of urea with soil incorporation."
+            },
+            "Phosphorus": {
+                "Mild": "Apply 15-25 kg/ha of superphosphate.",
+                "Moderate": "Apply 40 kg/ha of superphosphate.",
+                "Severe": "Apply 60 kg/ha of superphosphate, deep placement."
+            },
+            "Potassium": {
+                "Mild": "Foliar spray of 2% KCl weekly until symptoms disappear.",
+                "Moderate": "Apply 40 kg/ha of K2O and monitor plant response.",
+                "Severe": "Apply 80 kg/ha of K2O and incorporate into the soil."
+            },
+            "Magnesium": {
+                "Mild": "Foliar spray of 5% MgSO4 or dolomite limestone at 3 t/ha.",
+                "Moderate": "Apply 30-50 kg/ha of MgSO4 to the soil.",
+                "Severe": "Apply 100 kg/ha of MgSO4 with irrigation water."
+            },
+            "Iron": {
+                "Mild": "Soil application of FeSO4 (5 g/ha) or foliar spray of 0.5% FeSO4 weekly.",
+                "Moderate": "Apply 10 g/ha of FeSO4 to the soil and monitor symptoms.",
+                "Severe": "Apply chelated iron (EDDHA-Fe) for rapid correction."
+            }
+        },
+        "fertilizer_application_guidelines": {
+            "Application_Methods": {
+                "Even_Precise_Spreading": "Use calibrated spreaders and perform tray tests to ensure even distribution.",
+                "Split_Applications": {
+                    "Nitrogen": "Apply in multiple splits—50% before transplanting, 25% at 30 days, 25% at panicle initiation.",
+                    "Phosphorus_Potassium_Zinc": "Typically applied as a basal dose."
+                },
+                "Equipment_Conditions": "Adjust spreader settings based on weather to avoid uneven application."
+            },
+            "General_Best_Practices": {
+                "Quality_Consistency": "Use high-quality fertilizers and store them properly.",
+                "Timing_Precision": "Apply nutrients when crops need them most.",
+                "Zone_Specific_Recommendations": "Follow field zone-based tables for tailored application rates."
+            }
+        }
+    };
+
+    // Handle file selection
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Handle image removal
+    removeButton.addEventListener('click', function() {
+        fileInput.value = '';
+        previewContainer.style.display = 'none';
+        imagePreview.src = '#';
+        selectedSoilType = null;
+        document.getElementById('soil-selection').style.display = 'none';
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('detailed-report').classList.remove('visible');
+    });
+
+    // Handle soil type selection
+    const soilOptions = document.querySelectorAll('.soil-option');
+    soilOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            soilOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            selectedSoilType = this.getAttribute('data-soil');
+        });
+    });
+
+    // Function to update result display
+    function updateResult(elementId, label, value, confidence) {
+        const element = document.getElementById(elementId);
+        const confidenceBar = document.getElementById(elementId.split('-')[0] + '-confidence');
+        
+        if (element && confidenceBar) {
+            if (value === "Unknown") {
+                element.textContent = `${label}: ${value}`;
+                element.innerHTML += `<span class="confidence-text">(${(confidence * 100).toFixed(1)}% confidence)</span>`;
+                element.innerHTML += `<br><small class="text-muted">This may be a healthy plant or a type not currently detectable by the system.</small>`;
+                document.getElementById('detailed-report').classList.remove('visible');
+            } else {
+                element.textContent = `${label}: ${value}`;
+                const confidencePercent = (confidence * 100).toFixed(1);
+                element.innerHTML += `<span class="confidence-text">(${confidencePercent}% confidence)</span>`;
+                confidenceBar.innerHTML = `<div class="confidence-fill" style="width: ${confidencePercent}%"></div>`;
+            }
+        }
+    }
+
+    // Function to generate detailed report
+    function generateDetailedReport(plantType, deficiencyType, severityLevel, environmentalData = null) {
+        const report = document.getElementById('detailed-report');
+        
+        if (!report) {
+            console.error('Detailed report element not found');
+            return;
+        }
+    
+        // Clear previous report content
+        report.innerHTML = '';
+    
+        if (deficiencyType === "Unknown") {
+            report.classList.remove('visible');
+            return;
+        }
+    
+        if (!plantData.soil_preferences[plantType]) {
+            console.error('Plant type not found in data:', plantType);
+            return;
+        }
+    
+        // Create the main report card
+        const reportCard = document.createElement('div');
+        reportCard.className = 'report-card';
+    
+        // Add title
+        const title = document.createElement('h2');
+        title.textContent = 'Detailed Plant Report';
+        reportCard.appendChild(title);
+    
+        // Add timestamp and user info
+        const timestamp = document.createElement('div');
+        timestamp.className = 'report-timestamp';
+        timestamp.innerHTML = `
+            <p><strong>Analysis Date:</strong> ${currentDate}</p>
+            <p><strong>Analyzed by:</strong> ${currentUser}</p>
+        `;
+        reportCard.appendChild(timestamp);
+    
+        // Environmental Analysis Section (New)
+        if (environmentalData) {
+            const envSection = document.createElement('div');
+            envSection.className = 'report-section';
+            envSection.innerHTML = `
+                <h3>Environmental Analysis</h3>
+                <div class="report-grid">
+                    <div class="report-item">
+                        <h4>Current Conditions</h4>
+                        <ul class="report-list">
+                            <li>Location: ${environmentalData.location}</li>
+                            <li>Temperature: ${environmentalData.temperature}°C</li>
+                            <li>Humidity: ${environmentalData.humidity}%</li>
+                            <li>${environmentalData.status}</li>
+                        </ul>
+                    </div>
+                    <div class="report-item">
+                        <h4>Soil Analysis</h4>
+                        <ul class="report-list">
+                            <li>Selected Soil: ${selectedSoilType || 'Not specified'}</li>
+                            <li>${environmentalData.soil_analysis.status}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            reportCard.appendChild(envSection);
+        }
+    
+        // Soil & Growing Conditions Section (Original)
+        const soilSection = document.createElement('div');
+        soilSection.className = 'report-section';
+        soilSection.innerHTML = `
+            <h3>Soil & Growing Conditions</h3>
+            <div class="report-grid">
+                <div class="report-item">
+                    <h4>Soil Preferences</h4>
+                    <div id="soil-preferences">
+                        <ul class="report-list">
+                            <li>pH Range: ${plantData.soil_preferences[plantType].pH_range[0]} - ${plantData.soil_preferences[plantType].pH_range[1]}</li>
+                            <li>Suitable Soils: ${plantData.soil_preferences[plantType].suitable_soils.join(', ')}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="report-item">
+                    <h4>Optimal Conditions</h4>
+                    <div id="growing-conditions">
+                        <ul class="report-list">
+                            <li>Temperature: ${plantData.plant_conditions[plantType].temp_range[0]}°C - ${plantData.plant_conditions[plantType].temp_range[1]}°C</li>
+                            <li>Humidity: ${plantData.plant_conditions[plantType].humidity_range[0]}% - ${plantData.plant_conditions[plantType].humidity_range[1]}%</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        reportCard.appendChild(soilSection);
+        
+        // Nutrient Requirements Section (Original)
+        const nutrientSection = document.createElement('div');
+        nutrientSection.className = 'report-section';
+        nutrientSection.innerHTML = `
+            <h3>Nutrient Requirements</h3>
+            <div id="nutrient-requirements">
+                <div class="report-grid">
+                    <div class="report-item">
+                        <h4>Recommended Nutrient Levels (kg/ha)</h4>
+                        <ul class="report-list">
+                            <li>Nitrogen (N): ${plantData.nutrient_requirements[plantType].N}</li>
+                            <li>Phosphorus (P): ${plantData.nutrient_requirements[plantType].P}</li>
+                            <li>Potassium (K): ${plantData.nutrient_requirements[plantType].K}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        reportCard.appendChild(nutrientSection);
+    
+        // Treatment Recommendations Section (Combined)
+        const treatmentSection = document.createElement('div');
+        treatmentSection.className = 'report-section';
+        treatmentSection.innerHTML = `
+            <h3>Treatment Recommendations</h3>
+            <div id="treatment-recommendations">
+                ${getTreatmentRecommendations(deficiencyType, severityLevel, environmentalData)}
+            </div>
+        `;
+        reportCard.appendChild(treatmentSection);
+    
+        // Application Guidelines Section (Original)
+        const guidelinesSection = document.createElement('div');
+        guidelinesSection.className = 'report-section';
+        guidelinesSection.innerHTML = `
+            <h3>Application Guidelines</h3>
+            <div id="application-guidelines">
+                <div class="report-grid">
+                    <div class="report-item">
+                        <h4>Application Methods</h4>
+                        <ul class="report-list">
+                            <li>${plantData.fertilizer_application_guidelines.Application_Methods.Even_Precise_Spreading}</li>
+                            <li>${plantData.fertilizer_application_guidelines.Application_Methods.Split_Applications.Nitrogen}</li>
+                        </ul>
+                    </div>
+                    <div class="report-item">
+                        <h4>Best Practices</h4>
+                        <ul class="report-list">
+                            <li>${plantData.fertilizer_application_guidelines.General_Best_Practices.Quality_Consistency}</li>
+                            <li>${plantData.fertilizer_application_guidelines.General_Best_Practices.Timing_Precision}</li>
+                            <li>${plantData.fertilizer_application_guidelines.General_Best_Practices.Zone_Specific_Recommendations}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        reportCard.appendChild(guidelinesSection);
+    
+        // Append the complete report card to the report container
+        report.appendChild(reportCard);
+        report.classList.add('visible');
+    }
+
+    function getTreatmentRecommendations(deficiencyType, severityLevel, environmentalData) {
+        let deficiencyKey = deficiencyType;
+        if (deficiencyType.includes('(')) {
+            deficiencyKey = deficiencyType.split('(')[0].trim();
+        } else if (deficiencyType.includes('-')) {
+            deficiencyKey = deficiencyType.split('-')[0].trim();
+        }
+        deficiencyKey = deficiencyKey.charAt(0).toUpperCase() + deficiencyKey.slice(1);
+    
+        if (environmentalData && environmentalData.recommendation) {
+            return `
+                <div class="report-item">
+                    <h4>${deficiencyType} Deficiency Treatment (${severityLevel})</h4>
+                    <p>${environmentalData.recommendation.treatment}</p>
+                    <div class="environmental-context">
+                        <p><strong>Environmental Context:</strong></p>
+                        <ul>
+                            <li>${environmentalData.status}</li>
+                            <li>${environmentalData.soil_analysis.status}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        } else {
+            const fertilizer = plantData.fertilizer_recommendations[deficiencyKey];
+            return `
+                <div class="report-item">
+                    <h4>${deficiencyType} Deficiency Treatment (${severityLevel})</h4>
+                    <p>${fertilizer ? fertilizer[severityLevel] : 'No specific recommendation available'}</p>
+                </div>
+            `;
+        }
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        if (selectedSoilType) {
+            formData.append('soil_type', selectedSoilType);
+        }
+        
+        try {
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('detailed-report').classList.remove('visible');
+            
+            const response = await fetch('http://localhost:5000/predict', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            const data = await response.json();
+            
+            // Hide loading state
+            document.getElementById('loading').style.display = 'none';
+            
+            // Show results
+            if (data.error) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = data.error;
+                return;
+            }
+            
+            document.getElementById('results').style.display = 'block';
+            
+            // Update results display
+            updateResult('plant-type', 'Plant Type', data.plant.type, data.plant.confidence);
+            updateResult('deficiency-type', 'Deficiency', data.deficiency.type, data.deficiency.confidence);
+            updateResult('severity-level', 'Severity', data.severity.level, data.severity.confidence);
+            
+            // Show soil selection if not already selected
+            if (!selectedSoilType && data.plant.type !== "Unknown") {
+                document.getElementById('soil-selection').style.display = 'block';
+                document.getElementById('detailed-report').classList.remove('visible');
+            }else{
+                document.getElementById('soil-selection').style.display = 'none';
+                // Generate detailed report
+                generateDetailedReport(
+                    data.plant.type,
+                    data.deficiency.type,
+                    data.severity.level,
+                    {
+                        location: data.environmental_analysis?.location || 'Unknown',
+                        temperature: data.environmental_analysis?.temperature || 'N/A',
+                        humidity: data.environmental_analysis?.humidity || 'N/A',
+                        status: data.environmental_analysis?.status || 'Environmental data not available',
+                        soil_analysis: data.soil_analysis || {
+                            soil_type: selectedSoilType || 'Not specified',
+                            status: 'Soil analysis not available'
+                        },
+                        recommendation: data.recommendation || null
+                    }
+                );
+            }}
+            
+                        
+                        
+                     catch (error) {
+                        console.error('Error:', error);
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('error').style.display = 'block';
+                        document.getElementById('error').textContent = 'Error processing image. Please try again.';
+                    }
+                });
+            
+                // Add handler for soil type submission
+                document.getElementById('submitSoilType').addEventListener('click', function() {
+                    if (!selectedSoilType) {
+                        alert('Please select a soil type to continue.');
+                        return;
+                    }
+                    document.getElementById('soil-selection').style.display = 'none';
+                    // Resubmit the form with the soil type
+                    const formEvent = new Event('submit');
+                    form.dispatchEvent(formEvent);
+                });
+            
+                // Drag and drop handlers
+                const dropZone = document.querySelector('.file-upload label');
+            
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, preventDefaults, false);
+                });
+            
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, highlight, false);
+                });
+            
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, unhighlight, false);
+                });
+            
+                function highlight(e) {
+                    dropZone.classList.add('highlight');
+                }
+            
+                function unhighlight(e) {
+                    dropZone.classList.remove('highlight');
+                }
+            
+                dropZone.addEventListener('drop', handleDrop, false);
+            
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    const file = dt.files[0];
+                    fileInput.files = dt.files;
+                    
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            previewContainer.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+
