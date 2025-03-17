@@ -24,19 +24,31 @@ function getPlants() {
                 return;
             }
 
-            data.plants.forEach(plant => {
-                let plantItem = `
-                <div class="image-container">
-                     <img src="/static/images/${plant.name}.jpg" alt="${plant.name}">
-                    <div class="caption">${plant.name}</div>
-                </div>
-            `;
-                plantList.innerHTML += plantItem;
-            });
+            // Fetch the Excel data (assuming it's already loaded on the client side)
+            fetch("/getExcelData")
+                .then(response => response.json())
+                .then(excelData => {
+                    // Filter plants based on the location from the Excel data
+                    let filteredPlants = data.plants.filter(plant => {
+                        let locationPlants = excelData[location.toLowerCase()];
+                        return locationPlants && locationPlants.includes(plant.name.toLowerCase());
+                    });
 
-            // Show the results section
-            document.querySelector('.results').style.display = 'block';
+                    // Display the filtered plants
+                    filteredPlants.forEach(plant => {
+                        let plantItem = `
+                            <div class="image-container">
+                                <img src="/static/images/${plant.name}.jpg" alt="${plant.name}">
+                                <div class="caption">${plant.name}</div>
+                            </div>
+                        `;
+                        plantList.innerHTML += plantItem;
+                    });
 
+                    // Show the results section
+                    document.querySelector('.results').style.display = 'block';
+                })
+                .catch(error => console.error("Error fetching Excel data:", error));
         })
         .catch(error => console.error("Error:", error));
 }
