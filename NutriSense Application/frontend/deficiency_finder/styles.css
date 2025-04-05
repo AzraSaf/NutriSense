@@ -1,0 +1,643 @@
+:root {
+    --primary-color: #2c7a4e;
+    --secondary-color: #4CAF50;
+    --background-color: #f5f5f5;
+    --text-color: #333;
+    --error-color: #ff4444;
+    --success-color: #00C851;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Montserrat";
+}
+li {
+    display: inline;
+}
+
+#top {
+    position: relative;
+    background-color: #1A3C34;
+}
+
+.nav {
+    position: absolute;
+    right: -25px;
+    top: 30px;
+}
+
+.nav ul li{
+    display: inline;
+    margin-right: 7px;
+    padding: 0px;
+    transition: 0.3s ease-in-out;
+}
+
+.nav a{
+    color: white;
+}
+
+.nav ul li:hover {
+    font-weight: 900;
+    font-size: larger;
+    font-weight: bolder;
+}
+
+
+li a {
+    padding: 8px;
+    color: #ffffff;
+    text-decoration: none;
+}
+.logo {
+    width: 200px;
+    height: 98px;
+    background-image: url("nutri2.png");
+    background-size: contain;
+    margin-left: 20px;
+}
+li {
+    display: inline;
+}
+
+#copyright{
+    position: relative;
+    top: 200px;
+}
+
+.dropbtn {
+    /*background-color: #4CAF50;*/
+    /*color: white;*/
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    font-size: small;
+    text-decoration: none;
+    display: block;
+}
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-image: url('marble.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    backdrop-filter: blur(1px);
+    color: var(--text-color);
+}
+
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+li a {
+    color: white;
+    text-decoration: none;
+    padding: 8px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.upload-section {
+    background: rgb(255, 243, 243);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    border: 1px solid black;
+}
+
+.file-upload {
+    position: relative;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.file-upload input[type="file"] {
+    display: none;
+}
+
+.file-upload label {
+    display: block;
+    padding: 2rem;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload label:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(44, 122, 78, 0.05);
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.preview-container {
+    position: relative;
+    margin-top: 1rem;
+}
+
+.preview-container img {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+}
+
+.remove-button {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.analyze-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.analyze-button:hover {
+    background-color: var(--secondary-color);
+}
+
+.loading {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error {
+    color: var(--error-color);
+    text-align: center;
+    padding: 1rem;
+    background-color: rgba(255, 68, 68, 0.1);
+    border-radius: 5px;
+    margin: 1rem 0;
+}
+
+.results {
+    margin-top: 2rem;
+}
+
+.result-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid black;
+}
+
+.result-card h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.result-item {
+    margin-bottom: 1.5rem;
+}
+
+.result-text {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.confidence-bar {
+    height: 10px;
+    background-color: #eee;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.confidence-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--success-color);
+    transition: width 0.3s ease;
+}
+
+footer {    
+    text-align: center;
+    margin-top: 3rem;
+    color: #666;
+}
+
+/* Add these to your existing CSS */
+.confidence-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-left: 10px;
+}
+
+.confidence-fill {
+    height: 100%;
+    background-color: var(--success-color);
+    transition: width 0.3s ease;
+}
+
+/* Add this section for the detailed report */
+.detailed-report {
+    margin-top: 2rem;
+    display: none;
+}
+
+.detailed-report.visible {
+    display: block;
+}
+
+.report-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+    border: 1px solid black;
+}
+
+.report-section {
+    margin-bottom: 1.5rem;
+}
+
+.report-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.5rem;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.report-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+.report-item h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.report-list {
+    list-style: none;
+    padding: 0;
+}
+
+.report-list li {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.report-list li:before {
+    content: "•";
+    color: var(--secondary-color);
+    position: absolute;
+    left: 0;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .upload-section {
+        padding: 1rem;
+    }
+
+    .preview-container img {
+        max-width: 100%;
+    }
+}
+
+/* Add to your existing CSS */
+.soil-selection {
+    margin-top: 2rem;
+}
+
+.soil-selection-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.soil-selection-card h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.soil-selection-card .subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.soil-options {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.soil-emoji {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.soil-option {
+    cursor: pointer;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 2px solid #eee;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 120px;
+}
+
+.soil-option:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(44, 122, 78, 0.05);
+}
+
+.soil-option.active {
+    border-color: var(--primary-color);
+    background-color: rgba(44, 122, 78, 0.1);
+}
+
+.soil-option img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+}
+
+.soil-option span {
+    display: block;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Environmental Analysis Section */
+.environmental-status {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.environmental-status h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 4px;
+}
+
+/* Add to your existing CSS */
+.report-timestamp {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.environmental-context {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.environmental-context ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+}
+
+.environmental-context li {
+    padding: 0.3rem 0;
+    color: #666;
+}
+
+footer {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgba(0,0,0,0.8613);
+    color: white;
+    padding: 20px;
+    height: 370px;
+    overflow-x: hidden;
+    font-size: 13px;
+}
+.bx-user-circle:hover {
+    opacity: 0.7;
+}
+.footer-section {   /* Each footer section*/
+    flex: 1;
+    text-align: left;
+    position: relative;
+    left: 70px;
+
+}
+
+
+.footer-section h3 {  /* heading for each footer section*/
+    margin-bottom: 20px;
+    margin-top: 30px;
+    font-size: 13px;
+}
+
+.footer-section ul {
+    list-style-type: none;
+}
+
+
+.socialMediaLinks li{
+    display: inline-block;
+    position: relative;
+    right: 1px;
+
+
+}
+.socialMediaLinks li a {
+    color: #74a97b;
+    text-decoration: none;
+    font-size: 16px;
+
+}
+.footer-section a:hover{
+    opacity: 0.7;
+}
+.footer-section ul li {  /* spaces around the information */
+    margin-bottom: 5px;
+    margin-right: 10px;
+}
+.links{                         /* all the links in footer  */
+    text-decoration: none;
+    color: inherit;
+    text-align: left;
+    font-size: 13px;
+}
+
+.logo2{
+    width: 200px;
+    height: 98px;
+    background-image: url("nutrilogo1.png");
+    background-size: contain;
+    position: relative;
+    right: 30px;
+}
+/* Prevent horizontal overflow */
+body, html {
+    overflow-x: hidden;
+}
+
+/* Ensure no element causes horizontal scroll */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+.para2{
+    font-family: Calibri;
+    font-size: x-large;
+    text-align: left;
+    font-weight: 0;
+    margin-left: 100px;
+    color: dimgray;
+}
+.grid-container1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+}
+.grid-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid white;
+    padding: 20px;
+    font-size: 30px;
+}
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 10px;
+}
+.para{
+    text-align: left;
+    margin-left: 50px;
+    color: dimgray;
+}
+.button1 {
+    background-color: #3a6239;
+    border: none;
+    color: white;
+    padding: 16px 32px;
+    text-decoration: none;
+    margin-left: 100px;
+    cursor: pointer;
+    border-radius: 30px;
+    font-size: 1.2em;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #489654;
+}
+
+

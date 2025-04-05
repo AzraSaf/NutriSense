@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Nutrient Deficiency Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css"
+    />
+    <link rel="icon" href="nutrilogo1.png" />
+</head>
+<body>
+
+
+<div id="top">
+    <!-- Background and logo -->
+
+        <div class="black">
+            <div class="logo">
+                <i
+                        class="bx bx-registered"
+                        style="color: #ffffff; margin-left: 200px; margin-top: 30px"
+                ></i>
+            </div>
+            <!-- Navigation menu -->
+            <div class="nav">
+                <ul>
+                    <!-- Menu items -->
+                    <li>
+                        <a href="../homepage/homepage.html"
+                        ><i class="bx bx-home"></i>Home</a
+                        >
+                    </li>
+                    <li>
+                        <div class="dropdown">
+                            <button class="dropbtn" style="background-color: transparent; color: white"><i class='bx bx-shopping-bag'></i>Features</button>
+                            <div class="dropdown-content">
+                                <a href="../oshini_frontend/index.html">Input Location</a>
+                                <a href="../deficiency_finder/index.html">Input Plant Leaf</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="../GALLERYPAGE/Gallery.html"
+                        ><i class="bx bx-photo-album"></i>Gallery</a
+                        >
+                    </li>
+                    <li>
+                        <a href="../LISTINGPAGE/listingpage.html"
+                        ><i class="bx bx-message-rounded-dots"></i>Reviews</a
+                        >
+                    </li>
+                    <li>
+                        <a href="../ABOUTUSPAGE/about.html"
+                        ><i class="bx bx-face"></i>About</a
+                        >
+                    </li>
+                    <li>
+                        <a href="../CONTACTPAGE/Contact.html"
+                        ><i class="bx bx-envelope"></i>Contact</a
+                        >
+                    </li>
+                    <li
+                            style="
+                  border: 2px solid #3a6239;
+                  background-color: #3a6239;
+                  border-radius: 12px;
+                  padding: 5px;
+                "
+                    >
+                        <a href="../homepage/homepage.html"
+                        ><i class="bx bx-search"></i> Search</a
+                        >
+                    </li>
+                    <li>
+                        <a href="../SIGNINPAGE/SignInForm.html"
+                        ><i
+                                class="bx bx-user-circle"
+                                style="
+                      color: white;
+                      font-size: xx-large;
+                      position: relative;
+                      top: 9px;
+                      margin-right: 10px;
+                    "
+                        ></i
+                        ></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="container">
+        <header>
+            <h1>Plant Nutrient Deficiency Analyzer</h1>
+            <p class="subtitle">Upload a plant leaf image to analyze its nutrient deficiency</p>
+        </header>
+
+        <main>
+            <form id="upload-form" class="upload-section">
+                <div class="file-upload">
+                    <input type="file" id="file-input" name="file" accept="image/*" required>
+                    <label for="file-input">
+                        <div class="upload-icon">📸</div>
+                        <span>Choose an image or drag it here</span>
+                    </label>
+                    <div id="preview-container" class="preview-container" style="display: none;">
+                        <img id="image-preview" src="#" alt="Preview">
+                        <button type="button" id="remove-image" class="remove-button">×</button>
+                    </div>
+                </div>
+                <button type="submit" class="analyze-button">Analyze Image</button>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing image...</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="results" class="results" style="display: none;">
+                <div class="result-card">
+                    <h2>Analysis Results</h2>
+                    <div class="result-item">
+                        <p id="plant-type" class="result-text"></p>
+                        <div id="plant-confidence" class="confidence-bar"></div>
+                    </div>
+                    <div class="result-item">
+                        <p id="deficiency-type" class="result-text"></p>
+                        <div id="deficiency-confidence" class="confidence-bar"></div>
+                    </div>
+                    <div class="result-item">
+                        <p id="severity-level" class="result-text"></p>
+                        <div id="severity-confidence" class="confidence-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="soil-selection" class="soil-selection" style="display: none;">
+                <div class="soil-selection-card">
+                    <h2>Select Soil Type</h2>
+                    <p class="subtitle">This helps us provide more accurate recommendations</p>
+                    <div class="soil-options" id="soilOptions">
+                        <div class="soil-option" data-soil="Clay">
+                            <span class="soil-emoji">🏺</span>
+                            <span>Clay</span>
+                        </div>
+                        <div class="soil-option" data-soil="Loamy">
+                            <span class="soil-emoji">🌱</span>
+                            <span>Loamy</span>
+                        </div>
+                        <div class="soil-option" data-soil="Sandy">
+                            <span class="soil-emoji">🏖️</span>
+                            <span>Sandy</span>
+                        </div>
+                    </div>
+                    <button id="submitSoilType" class="analyze-button">Continue Analysis</button>
+                </div>
+            </div>
+
+
+
+            <div id="detailed-report" class="detailed-report">
+                <div class="report-card">
+                    <h2>Detailed Plant Report</h2>
+                    <div class="report-section">
+                        <h3>Soil & Growing Conditions</h3>
+                        <div class="report-grid">
+                            <div class="report-item">
+                                <h4>Soil Preferences</h4>
+                                <div id="soil-preferences"></div>
+                            </div>
+                            <div class="report-item">
+                                <h4>Optimal Conditions</h4>
+                                <div id="growing-conditions"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Nutrient Requirements</h3>
+                        <div id="nutrient-requirements"></div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Treatment Recommendations</h3>
+                        <div id="treatment-recommendations"></div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Application Guidelines</h3>
+                        <div id="application-guidelines"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+        <div class="grid-container1">
+            <div class="grid-item" style="font-size: xx-large; font-weight: 900; text-align: center; font-family: Calibri"><div class="para" style="font-weight: normal; font-size: medium; margin-left: 190px">Why us</div> <br>Turning leaf images into<br> solutions! <br><br>
+                <div class="para" style="font-weight: normal; font-size: medium; margin-left: 100px">By analyzing leaf images, NutriSense identifies plant species, detects nutrient deficiencies, assesses severity, and recommends targeted fertilizers. </div><br><br>
+                <div class="para2"><i class='bx bx-right-down-arrow-circle' style="color: #489654"></i>Leaf Species Identification</div>
+                <div class="para" style="font-weight: normal; font-size: medium; margin-left: 100px">Identifies the plant species (banana, rice, or coffee)<br> using image classification techniques.
+                    This ensures accurate analysis and species-specific treatment recommendations.</div><br>
+                <div class="para2"><i class='bx bx-right-down-arrow-circle' style="color: #489654"></i>Plant Deficiency Identification along with Severity</div>
+                <div class="para" style="font-weight: normal; font-size: medium; margin-left: 100px">Analyzes the uploaded leaf image to detect specific nutrient deficiencies.
+                    It also assesses the severity level to guide proper urgency and response.</div><br>
+                <div class="para2"><i class='bx bx-right-down-arrow-circle' style="color: #489654"></i>Personalized Fertilizer Recommendation</div>
+                <div class="para" style="font-weight: normal; font-size: medium; margin-left: 100px">Provides tailored fertilizer suggestions based on plant type, deficiency, and soil.
+                    Recommends optimal dosage and method to enhance plant recovery and growth.</div><br>
+
+            </div>
+            <div class="grid-item" style="font-size: xxx-large; font-weight: 900; text-align: center; font-family: Calibri"><div class="para" style="font-weight: normal; font-size: medium; margin-left: 190px">About us</div><br> "Each leaf tells a story—NutriSense listens with AI. " <br><br>
+                <div class="para" style="font-weight: normal; font-size: medium">With increasing challenges in agriculture due to climate change and soil degradation, NutriSense offers a sustainable, AI-driven solution. <br><br><br>
+                    <button onclick="" style="margin-left: 120px" class="button1">Read More</button></div></div>
+        </div>
+        <br><br><hr>
+    </div>
+
+
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-section">
+            <div class="logo2">
+                <i
+                    class="bx bx-registered"
+                    style="color: #ffffff; margin-left: 200px; margin-top: 30px"
+                ></i>
+            </div>
+            <p style="font-size: 13px; text-align: left">
+                <br>
+                No 04, <br />
+                Galle Road,<br />
+                Colombo 04. <br>
+                Sri Lanka
+            </p>
+            <br />
+
+            <p style="font-size: 13px; text-align: left">Tel-No: +94 77 5528 228</p>
+            <br />
+
+            <a href=" " class="links"> nutrisense@gmail.com </a>
+            <br />
+            <br />
+            <ul class="socialMediaLinks">
+                <li><a href="#" class="fa fa-facebook"></a></li>
+                <li><a href="#" class="fa fa-twitter"></a></li>
+                <li><a href="#" class="fa fa-youtube"></a></li>
+                <li><a href="#" class="fa fa-instagram"></a></li>
+                <li><a href="#" class="fa fa-linkedin"></a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h3>SUPPORT</h3>
+            <ul>
+                <li>
+                    <a href="../CONTACTPAGE/Contact.html" class="links"> Contact us</a>
+                </li>
+                <br />
+                <li>
+                    <a href="../ABOUTUSPAGE/about.html" class="links"> About us</a>
+                </li>
+                <br />
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h3>FEATURES</h3>
+            <ul>
+                <li><a href="../oshini_frontend/index.html" class="links"> Input Location </a></li><br>
+                <li><a href="../deficiency_finder/index.html" class="links"> Input Leaf Images </a></li><br>
+            </ul>
+            <p id="copyright">Copyright © 2025 NutriSense.com</p>
+            <br /><br />
+        </div>
+        <br />
+
+        <div class="footer-section">
+            <h3>PROFILE</h3>
+            <ul>
+                <li>
+                    <a href="../SIGNINPAGE/SignInForm.html" class="links"> Account </a>
+                </li>
+                <br />
+                <li>
+                    <a href="../SIGNINPAGE/SignInForm.html" class="links"> Login </a>
+                </li>
+                <br />
+                <li>
+                    <a href="../SIGNINPAGE/SignInForm.html" class="links"> Sign up </a>
+                </li>
+                <br />
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h3>OTHER</h3>
+            <ul>
+                <li>
+                    <a href="../GALLERYPAGE/Gallery.html" class="links"> Gallery </a>
+                </li>
+                <br />
+                <li>
+                    <a href="../LISTINGPAGE/listingpage.html" class="links">
+                        Reviews and Ratings
+                    </a>
+                </li>
+                <br />
+                <li>
+                    <a href="" class="links">
+                        Editor's Page
+                    </a>
+                </li>
+                <br />
+            </ul>
+        </div>
+        <br />
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

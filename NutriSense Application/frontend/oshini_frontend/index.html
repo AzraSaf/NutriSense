@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Recommendation System</title>
+    <link rel="stylesheet" href="nutri.css">
+
+    <link
+            href="https://fonts.googleapis.com/css?family=Montserrat"
+            rel="stylesheet"
+    />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css"
+    />
+    
+    <style>
+    
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .location-input {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #location {
+            
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #locationDropdown {
+            display: none;
+            position: absolute;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            z-index: 1000;
+        }
+
+        #locationDropdown div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #locationDropdown div:hover {
+            background-color: #f0f0f0;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .image-container {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+
+        .image-container img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .caption {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        #error {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .plants-grid {
+            display: grid;
+            align-items: center;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+    </style>
+
+</head>
+<body>
+<div id="top">
+    <!-- Background and logo -->
+
+    <div class="black">
+        <div class="logo">
+            <i
+                    class="bx bx-registered"
+                    style="color: #ffffff; margin-left: 200px; margin-top: 30px"
+            ></i>
+        </div>
+        <!-- Navigation menu -->
+        <div class="nav">
+            <ul>
+                <!-- Menu items -->
+                <li>
+                    <a href="../homepage/homepage.html"
+                    ><i class="bx bx-home"></i>Home</a
+                    >
+                </li>
+                <li>
+                    <div class="dropdown11">
+                        <button class="dropbtn11" style="background-color: transparent; color: white"><i class='bx bx-shopping-bag'></i>Features</button>
+                        <div class="dropdown11-content">
+                            <a href="../oshini_frontend/index.html">Input Location</a>
+                            <a href="../deficiency_finder/index.html">Input Plant Leaf</a>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <a href="../GALLERYPAGE/Gallery.html"
+                    ><i class="bx bx-photo-album"></i>Gallery</a
+                    >
+                </li>
+                <li>
+                    <a href="../LISTINGPAGE/listingpage.html"
+                    ><i class="bx bx-message-rounded-dots"></i>Reviews</a
+                    >
+                </li>
+                <li>
+                    <a href="../ABOUTUSPAGE/about.html"
+                    ><i class="bx bx-face"></i>About</a
+                    >
+                </li>
+                <li>
+                    <a href="../CONTACTPAGE/Contact.html"
+                    ><i class="bx bx-envelope"></i>Contact</a
+                    >
+                </li>
+                <li
+                        style="
+                  border: 2px solid #3a6239;
+                  background-color: #3a6239;
+                  border-radius: 12px;
+                  padding: 5px;
+                "
+                >
+                    <a href="../homepage/homepage.html"
+                    ><i class="bx bx-search"></i> Search</a
+                    >
+                </li>
+                <li>
+                    <a href="../SIGNINPAGE/SignInForm.html"
+                    ><i
+                            class="bx bx-user-circle"
+                            style="
+                      color: white;
+                      font-size: xx-large;
+                      position: relative;
+                      top: 9px;
+                      margin-right: 10px;
+                    "
+                    ></i
+                    ></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="btn-container"> <br><br><br></div>
+<div class="grid-container">
+    <div class="grid-item" style="font-size: xxx-large; font-weight: 900; text-align: center; font-family: 'Times New Roman',fantasy">How it all<br>works<hr><br><br><div class="para" style="font-size: medium">Follow these 3 simple steps!.<br> Planting made more efficient!!</div> </div>
+    <div class="grid-item"><div class="con"></div></div>
+    <div class="grid-item" style="margin-top: 50px">
+        <span class="dot" style="text-align: center; font-size: 60px; font-weight: 900; color: #3a6239">1</span>Enter Your Location<br>
+        <div class="para" style="font-weight: normal; font-size: medium; margin-left: 50px">Simply input your location to discover the most suitable crops for your area.</div><br>
+        <span class="dot" style="text-align: center; font-size: 60px; font-weight: 900; color: #3a6239">2</span>Environmental Factors Considered<br>
+        <div class="para" style="font-weight: normal; font-size: medium; margin-left: 50px">NutriSense analyzes key environmental factors to determine optimal crops.</div><br>
+        <span class="dot" style="text-align: center; font-size: 60px; font-weight: 900; color: #3a6239">3</span>Get Your Best Crop Recommendations<br>
+        <div class="para" style="font-weight: normal; font-size: medium; margin-left: 50px">
+            You’ll receive a curated list of the most suitable crops for your specific region.</div>
+    </div>
+</div>
+<hr style="border-color: lightgrey">
+<br><br><br>
+
+<main>
+    <div class="container">
+        <h1>Crop Recommendation System</h1>
+        <div class="location-input">
+            <input type="text" id="location" placeholder="Enter your location" 
+                   onclick="showDropdown()" onkeyup="filterLocations()">
+            <div id="locationDropdown"></div>
+        </div>
+        <button onclick="getPlants()">Get Recommendations</button>
+        <div id="loading">Loading...</div>
+        <div id="error"></div>
+        <div class="results">
+            <h2>Recommended Crops</h2>
+            <div id="plant-list"></div>
+        </div>
+    </div>
+</main>
+
+<hr style="border-color: lightgrey">
+<br><br><br>
+
+<div class="row">
+    <div class="column">
+        <h2><i class='bx bx-leaf'></i>Sustainable Growth</h2><br>
+        <div class="para">Optimize resource usage and improve yields by selecting the right crops for your land.</div>
+    </div>
+    <div class="column">
+        <h2><i class='bx bx-line-chart' ></i>Data-Driven Agriculture</h2><br>
+        <div class="para">Make informed farming decisions with scientifically backed recommendations.</div>
+    </div>
+    <div class="column">
+        <h2><i class='bx bx-location-plus'></i>Location-Based Precision</h2><br>
+        <div class="para">Get crop recommendations tailored specifically to your region’s climate and soil conditions.</div>
+    </div>
+    <div class="column">
+        <h2><i class='bx bxs-report' ></i>AI-Powered Insights</h2><br>
+        <div class="para">Leverage advanced AI models to analyze environmental conditions and suggest the best crops.</div>
+    </div>
+</div>
+<br><br><br>
+<hr style="border-color: lightgrey">
+
+
+<!-- Footer -->
+<footer>
+    <div class="footer-section">
+        <div class="logo2">
+            <i
+                    class="bx bx-registered"
+                    style="color: #ffffff; margin-left: 200px; margin-top: 30px"
+            ></i>
+        </div>
+        <p style="font-size: 13px; text-align: left">
+            <br>
+            No 04, <br />
+            Galle Road,<br />
+            Colombo 04. <br>
+            Sri Lanka
+        </p>
+        <br />
+
+        <p style="font-size: 13px; text-align: left">Tel-No: +94 77 5528 228</p>
+        <br />
+
+        <a href=" " class="links"> nutrisense@gmail.com </a>
+        <br />
+        <br />
+        <ul class="socialMediaLinks">
+            <li><a href="#" class="fa fa-facebook"></a></li>
+            <li><a href="#" class="fa fa-twitter"></a></li>
+            <li><a href="#" class="fa fa-youtube"></a></li>
+            <li><a href="#" class="fa fa-instagram"></a></li>
+            <li><a href="#" class="fa fa-linkedin"></a></li>
+        </ul>
+    </div>
+
+    <div class="footer-section">
+        <h3>SUPPORT</h3>
+        <ul>
+            <li>
+                <a href="../CONTACTPAGE/Contact.html" class="links"> Contact us</a>
+            </li>
+            <br />
+            <li>
+                <a href="../ABOUTUSPAGE/about.html" class="links"> About us</a>
+            </li>
+            <br />
+        </ul>
+    </div>
+
+    <div class="footer-section">
+        <h3>FEATURES</h3>
+        <ul>
+            <li><a href="../oshini_frontend/index.html" class="links"> Input Location </a></li><br>
+            <li><a href="../deficiency_finder/index.html" class="links"> Input Leaf Images </a></li><br>
+        </ul>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <p id="copyright">Copyright © 2025 NutriSense.com</p>
+        <br /><br />
+    </div>
+    <br />
+
+    <div class="footer-section">
+        <h3>PROFILE</h3>
+        <ul>
+            <li>
+                <a href="../SIGNINPAGE/SignInForm.html" class="links"> Account </a>
+            </li>
+            <br />
+            <li>
+                <a href="../SIGNINPAGE/SignInForm.html" class="links"> Login </a>
+            </li>
+            <br />
+            <li>
+                <a href="../SIGNINPAGE/SignInForm.html" class="links"> Sign up </a>
+            </li>
+            <br />
+        </ul>
+    </div>
+    <div class="footer-section">
+        <h3>OTHER</h3>
+        <ul>
+            <li>
+                <a href="../GALLERYPAGE/Gallery.html" class="links"> Gallery </a>
+            </li>
+            <br />
+            <li>
+                <a href="../LISTINGPAGE/listingpage.html" class="links">
+                    Reviews and Ratings
+                </a>
+            </li>
+            <br />
+            <li>
+                <a href="" class="links">
+                    Editor's Page
+                </a>
+            </li>
+            <br />
+        </ul>
+    </div>
+    <br />
+</footer>
+
+<script>
+    // Add these missing functions first
+    function showDropdown() {
+        document.getElementById('locationDropdown').style.display = 'block';
+    }
+
+    function hideDropdown() {
+        document.getElementById('locationDropdown').style.display = 'none';
+    }
+
+    function filterLocations() {
+        const input = document.getElementById('location');
+        const filter = input.value.toUpperCase();
+        const dropdown = document.getElementById('locationDropdown');
+        const options = dropdown.getElementsByTagName('div');
+
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            const text = option.textContent || option.innerText;
+            if (text.toUpperCase().indexOf(filter) > -1) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+            }
+        }
+    }
+
+    function toSentenceCase(str) {
+        return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    // Your existing JavaScript code
+    document.addEventListener('DOMContentLoaded', function() {
+    // Fetch locations when page loads
+    fetch('http://localhost:5000/get-locations')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            const locations = data.locations || [];  // Use empty array if locations is undefined
+            const dropdownContent = document.getElementById('locationDropdown');
+
+            if (locations.length === 0) {
+                const message = document.createElement('div');
+                message.textContent = 'No locations available';
+                message.style.padding = '10px';
+                message.style.color = '#666';
+                dropdownContent.appendChild(message);
+                return;
+            }
+
+            locations.forEach(location => {
+                const option = document.createElement('div');
+                option.textContent = toSentenceCase(location);
+                option.onclick = () => {
+                    document.getElementById('location').value = option.textContent;
+                    hideDropdown();
+                };
+                dropdownContent.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching locations:', error);
+            const dropdownContent = document.getElementById('locationDropdown');
+            const errorMessage = document.createElement('div');
+            errorMessage.textContent = 'Error loading locations. Please try again later.';
+            errorMessage.style.padding = '10px';
+            errorMessage.style.color = 'red';
+            dropdownContent.appendChild(errorMessage);
+        });
+});
+
+function getPlants() {
+    let location = document.getElementById("location").value;
+    if (!location) {
+        alert("Please enter a location!");
+        return;
+    }
+
+    // Show loading state
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('error').style.display = 'none';
+    document.querySelector('.results').style.display = 'none';
+
+    let formData = new FormData();
+    formData.append("location", location);
+
+    fetch("http://localhost:5000/predict-crop", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('loading').style.display = 'none';
+
+        if (data.error) {
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = data.error;
+            return;
+        }
+
+        let plantList = document.getElementById("plant-list");
+        plantList.innerHTML = ""; // Clear previous results
+
+
+        // Fetch the Excel data for filtering
+        fetch("http://localhost:5000/getExcelData")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(excelData => {
+                if (excelData.error) {
+                    throw new Error(excelData.error);
+                }
+
+                let filteredPlants = data.plants.filter(plant => {
+                    let locationPlants = excelData[location.toLowerCase()];
+                    return locationPlants && locationPlants.includes(plant.name.toLowerCase());
+                });
+
+                if (filteredPlants.length === 0) {
+                    const message = document.createElement('div');
+                    message.textContent = 'No recommended crops found for this location';
+                    message.style.padding = '20px';
+                    message.style.color = '#666';
+                    plantList.appendChild(message);
+                } else {
+                    // Display the filtered plants
+                    const plantsGrid = document.createElement('div');
+                    plantsGrid.className = 'plants-grid';
+                    
+                    filteredPlants.forEach(plant => {
+                        let plantItem = `
+                            <div class="image-container">
+                                <img src="static/images/${plant.name.toLowerCase()}.jpg" 
+                                    alt="${plant.name}"
+                                    onerror="this.src='static/images/default.jpg'">
+                                <div class="caption">${plant.name}</div>
+                            </div>
+                        `;
+                        plantsGrid.innerHTML += plantItem;
+                    });
+
+                    plantList.appendChild(plantsGrid);
+                }
+                document.querySelector('.results').style.display = 'block';
+            })
+            .catch(error => console.error("Error fetching Excel data:", error));
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = 'Error processing request. Please try again.';
+    });
+}
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const input = document.getElementById('location');
+        const dropdown = document.getElementById('locationDropdown');
+        if (event.target !== input && event.target !== dropdown) {
+            hideDropdown();
+        }
+    });
+</script>
+
+</body>
+</html>
+
+

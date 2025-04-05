@@ -1,0 +1,393 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('images/bg.jpg'); /* Replace with your image path */
+    background-size: cover; /* Ensures the image covers the entire screen */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents repeating */
+    background-attachment: fixed; /* Keeps the image fixed while scrolling */
+    text-align: center;
+
+}
+#top {
+    position: relative;
+    background-color: #1A3C34;
+}
+header {
+    width: 100%;
+    height: 80px;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 0 40px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+
+}
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Montserrat";
+}
+
+li {
+    display: inline;
+}
+
+#top {
+    position: relative;
+}
+
+
+
+.logo {
+    width: 200px;
+    height: 98px;
+    background-image: url("nutri2.png");
+    background-size: contain;
+    margin-left: 20px;
+}
+
+.nav {
+    position: absolute;
+    right: 2px;
+    top: 40px;
+}
+.nav ul li{
+    display: inline;
+    margin-right: 7px;
+    padding: 0px;
+    transition: 0.3s ease-in-out;
+}
+
+.nav ul li:hover {
+    font-weight: 900;
+    font-size: larger;
+}
+
+li a {
+    padding: 8px;
+    color: white;
+    text-decoration: none;
+}
+
+
+.search-section {
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+input {
+    padding: 10px;
+    width: 70%;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.results {
+    margin-top: 20px;
+    color: white;
+}
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 columns */
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.image-container {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+/* Responsive Design: Switch to 3 columns on smaller screens */
+@media (max-width: 1024px) {
+    .gallery {
+        grid-template-columns: repeat(3, 1fr); /* 3 columns */
+    }
+}
+
+/* Switch to 2 columns on even smaller screens */
+@media (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    }
+}
+
+/* Switch to 1 column on very small screens */
+@media (max-width: 480px) {
+    .gallery {
+        grid-template-columns: 1fr; /* 1 column */
+    }
+}
+
+/* Dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 300px;
+}
+
+/* Input field */
+.locationInput {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-top: none;
+    z-index: 1;
+    text-align: left;
+}
+
+/* Location options */
+.dropdown-content div {
+    padding: 10px;
+    cursor: pointer;
+    color: black;
+}
+
+/* Hover effect for location options */
+.dropdown-content div:hover {
+    background-color: #f1f1f1;
+}
+
+
+
+.dropbtn11 {
+    /*background-color: #4CAF50;*/
+    /*color: white;*/
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown11 {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown11-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown11-content a {
+    color: black;
+    padding: 12px 16px;
+    font-size: small;
+    text-decoration: none;
+    display: block;
+}
+/* Show the dropdown menu on hover */
+.dropdown11:hover .dropdown11-content {
+    display: block;
+}
+
+footer {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgba(0,0,0,0.8613);
+    color: white;
+    padding: 20px;
+    height: 350px;
+    overflow-x: hidden;
+    font-size: 13px;
+}
+.bx-user-circle:hover {
+    opacity: 0.7;
+}
+.footer-section {   /* Each footer section*/
+    flex: 1;
+    text-align: left;
+    position: relative;
+    left: 70px;
+
+}
+
+.footer-section h3 {  /* heading for each footer section*/
+    margin-bottom: 20px;
+    margin-top: 30px;
+    font-size: 13px;
+}
+
+.footer-section ul {
+    list-style-type: none;
+}
+
+
+.socialMediaLinks li{
+    display: inline-block;
+    position: relative;
+    right: 1px;
+
+
+}
+.socialMediaLinks li a {
+    color: #74a97b;
+    text-decoration: none;
+    font-size: 16px;
+
+}
+.footer-section a:hover{
+    opacity: 0.7;
+}
+
+.footer-section ul li {  /* spaces around the information */
+    margin-bottom: 5px;
+    margin-right: 10px;
+}
+.links{                         /* all the links in footer  */
+    text-decoration: none;
+    color: inherit;
+    text-align: left;
+    font-size: 13px;
+}
+
+.logo2{
+    width: 200px;
+    height: 98px;
+    background-image: url("nutrilogo1.png");
+    background-size: contain;
+    position: relative;
+    right: 30px;
+}
+
+.btn-container {
+    display: flex;
+    justify-content: center;
+    background-image: url("stripe.jpg");
+    background-size: cover;
+    background-position: bottom;
+    padding: 20px;
+}
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 10px;
+}
+.grid-container1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+}
+
+.grid-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid white;
+    padding: 20px;
+    font-size: 30px;
+}
+.con {
+    width: auto;
+    height: 452px;
+    background-image: url("laptop.jpg");
+    background-size: cover;
+    background-position: bottom;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 0 220px;
+    border-radius: 20px;
+}
+.bx-user-circle:hover {
+    opacity: 0.7;
+}
+.dot {
+    height: 100px;
+    width: 100px;
+    background-color: lightgrey;
+    border-radius: 50%;
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    margin-right: 20px;
+    float: left;
+}
+.para{
+    text-align: left;
+    margin-left: 80px;
+    color: dimgray;
+}
+.column {
+    float: left;
+    width: 23.5%;
+    padding: 10px;
+    text-align: center;
+}
+.row::after {
+    content: "";
+    display: table;
+    clear: both;
+}

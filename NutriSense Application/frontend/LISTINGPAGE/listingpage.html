@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="nutrilogo1.png"/>
+    <title>NutriSense.com| Reviews</title>
+    <link rel="stylesheet" href="listingPage.css">
+    <link
+            href="https://fonts.googleapis.com/css?family=Montserrat"
+            rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/css?family=Open Sans" rel="stylesheet"/>
+    <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="listingPage.js">
+    </script>
+</head>
+
+<body>
+
+
+<button class="button" onclick="topFunction()" id="topBtn" title="Go to top" style="background-color: transparent">
+    <i class='bx bx-chevrons-up' style="font-size: xx-large; color: #489654"></i>
+</button>
+<button class="button" onclick="bottomFunction()" id="bottomBtn" title="Go to bottom" style="background-color: transparent">
+    <i class='bx bx-chevrons-down' style="font-size: xx-large; color: #489654"></i>
+</button>
+
+<script>
+    let topButton = document.getElementById("topBtn");
+    let bottomButton = document.getElementById("bottomBtn");
+    window.onscroll = function() {scrollFunction()};
+    window.onload = function() {
+        fetchData();
+        setupSubscriptionForm();
+    };
+
+</script>
+
+
+
+
+    <header>
+        <div id="top">
+            <div class="topbg">
+                <div class="black">
+                    <div class="logo"><i
+                            class="bx bx-registered"
+                            style="color: #ffffff; margin-left: 200px; margin-top: 30px"
+                    ></i></div>
+                    <div class="nav">
+                        <ul>
+                            <li><a href="../homepage/homepage.html"><i class='bx bx-home'></i>Home</a></li>
+                            <li><a href="../SHOPPAGE/shop.html"><i class='bx bx-shopping-bag'></i>Features</a></li>
+                            <li><a href="../GALLERYPAGE/Gallery.html"><i class='bx bx-photo-album'></i>Gallery</a></li>
+                            <li style="font-size: large"><b><a href="../LISTINGPAGE/listingpage.html"><i class='bx bx-message-rounded-dots'></i>Reviews</a></b></li>
+                            <li><a href="../ABOUTUSPAGE/about.html"><i class='bx bx-face'></i>About</a></li>
+                            <li><a href="../CONTACTPAGE/Contact.html"><i class='bx bx-envelope'></i>Contact</a></li>
+                            <li style="border: 2px solid #3a6239;background-color: #3a6239;border-radius: 12px;padding: 5px;">
+                                <a href="../homepage/homepage.html"><i class='bx bx-search' ></i> Search</a></li>
+
+                            <li> <a href="../SIGNINPAGE/SignInForm.html"><i class='bx bx-user-circle' style="color: white; font-size: xx-large; position:relative; top:9px;"></i></a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <div class="headCont">
+                        <h1 id="Head" >Reviews & Ratings</h1>
+                        <p class="intro">
+                            Explore authentic user experiences and insightful ratings on our review page,<br>
+                            <span id="intro2">
+                                guiding you through the best services from in-depth critiques to honest recommendations,</span> <br>
+                            <span id="intro3"> discover what our community has to say before making your next decision</span>
+                        </p>
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+
+
+
+    </header>
+    <br>
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"><span class="border">&times;</span></a>
+
+        <div class="cont">
+            <p class="options" >Text colour</p>
+            <br>
+            <br>
+
+            <button class="dropdown-btn"  onclick="setupDropdowns()">
+                White/Black (default)
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container1">
+                <a href="#" class="Colours" onclick="changeTextColor('#9244b7');selectItem('Light Orchid');return false;">Light Orchid</a>
+                <a href="#" class="Colours" onclick="changeTextColor('#4682B4');selectItem('Steel Blue'); return false;">Steel Blue</a>
+                <a href="#" class="Colours" onclick="changeTextColor('#9400D3');selectItem('Violet'); return false;">Violet</a>
+                <a href="#" class="Colours" onclick="changeTextColor('#0404d9');selectItem('Blue'); return false;">Blue</a>
+
+            </div>
+            <br>
+            <br>
+
+            <p class="options">BackGround colour</p>
+            <br>
+            <br>
+            <button class="dropdown-btn2" onclick="setupDropdowns2()" >
+                White (default)
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container2">
+                <a href="#" class="Colours" onclick="changeBgColor('#f1f1f1');selectItem2('White'); return false;">White</a>
+                <a href="#" class="Colours" onclick="changeBgColor('#98FB98');selectItem2('Pale Green'); return false;">Pale Green</a>
+                <a href="#" class="Colours" onclick="changeBgColor('#FFE5B4');selectItem2('Peach'); return false;">Peach</a>
+                <a href="#" class="Colours" onclick="changeBgColor('#ADD8E6');selectItem2('Light Blue'); return false;">Light Blue</a>
+                <a href="#" class="Colours" onclick="changeBgColor('#D3D3D3');selectItem2('Light Gray'); return false;">Light Gray</a>
+
+
+            </div>
+
+            <br>
+            <br>
+
+            <button id="resetBtn" onclick="resetStyles()">Reset Styles</button>
+
+
+
+
+
+
+
+
+
+
+        </div>
+    </div>
+
+
+
+    <div class="dropdown-cont">
+
+        <div class="dropdown-menu" >
+            <p> <span class="Text"> Occupation </span>
+                <span class="icon"><box-icon name='chevron-down' ></box-icon></span>
+            </p>
+        </div>
+
+        <div class="dropdown-menu" >
+            <p> <span class="Text"> Ratings </span>
+                <span class="icon"><box-icon name='chevron-down' ></box-icon></span>
+            </p>
+        </div>
+        <div class="dropdown-menu" >
+            <p> <span class="Text"> Date</span>
+                <span class="icon"><box-icon name='chevron-down' ></box-icon></span>
+            </p>
+        </div>
+        <div class="dropdown-menu" >
+            <p> <span class="Text"> A-Z </span>
+                <span class="icon"><box-icon name='chevron-down' ></box-icon></span>
+            </p>
+        </div>
+
+    </div>
+
+
+    <button class="CustomizeBtn" id="CusBtn" onclick="openNav()"><span> <box-icon name='palette' type='solid' animation='flashing' ></box-icon> Customize</span></button>
+
+
+
+        <section class="reviews">
+            <br>
+
+
+
+            <div class="review-cube">
+                <div class="front">
+                    <img src="free-photo-of-farmer-in-india.jpeg" alt="Profile Picture">
+                    <h3 class="course">Farmer</h3>
+                    <p class="rating">&starf;&starf;&starf;&starf;&star;<br> <span style="font-size: 16px;position: relative;bottom: 10px;"> 4.0</span> </p>
+                </div>
+            </div>
+            <div class="Review">
+                <h2 class="user">Hasanka</h2>
+                <p id="Text1" style=" font-family: 'Open sans' " >
+
+
+                </p>
+                <p class="date">03/03/2025</p>
+
+
+            </div>
+
+
+
+            <div class="review-cube">
+                <div class="front">
+                    <img src="istockphoto-1092520698-612x612.jpg" alt="Profile Picture">
+                    <h3 class="course">Agronomist</h3>
+                    <p class="rating">&starf;&starf;&starf;&star;&star;<br> <span style="font-size: 16px;position: relative;bottom: 10px;"> 3.0</span> </p>
+                </div>
+            </div>
+
+            <div class="Review">
+                <h2 class="user">Johan</h2>
+                <p id="Text2" style=" font-family: 'Open sans' ">
+
+                </p>
+                <p class="date">07/02/2025</p>
+
+
+            </div>
+
+
+
+            <div class="review-cube">
+                <div class="front">
+                    <img src="360_F_432151892_oQ3YQDo2LYZPILlEMnlo55PjjgiUwnQb.jpg" alt="Profile Picture">
+                    <h3 class="course">Large-Scale Wheat Farmer</h3>
+                    <p class="rating">&starf;&starf;&starf;&starf;&starf;<br> <span style="font-size: 16px;position: relative;bottom: 10px;"> 5.0</span> </p>
+                </div>
+            </div>
+            <div class="Review">
+                <h2 class="user">Hector</h2>
+                <p id="Text3"style=" font-family: 'Open sans' ">
+
+                </p>
+                <p class="date">18/01/2025</p>
+
+
+            </div>
+
+
+            <div class="review-cube">
+                <div class="front">
+                    <img src="indian-farmer-1610471656527.avif" alt="Profile Picture">
+                    <h3 class="course">Greenhouse Grower</h3>
+                    <p class="rating">&starf;&starf;&starf;&starf;&star;<br> <span style="font-size: 16px;position: relative;bottom: 10px;"> 4.0</span> </p>
+                </div>
+            </div>
+
+            <div class="Review">
+                <h2 class="user">Mohammed</h2>
+                <p id="Text4" style=" font-family: 'Open sans' ">
+
+                </p>
+                <p class="date">02/01/2025</p>
+            </div>
+        </section>
+
+
+
+
+
+
+
+
+<div id="successPopup" class="popup">
+    <span id="successText"></span>
+</div>
+
+<footer>
+
+
+    <div class="ImgOverlay">
+        <div class="image-container">
+            <img src="news.png" alt="Background Image">
+            <div class="text-overlay">
+
+                <p>
+                    <span class="signin"> SUBSCRIBE NOW!</span> <br>
+                    <span style="font-size: 25px;"> to receive our personalized newsletter!</span>
+                </p>
+            </div>
+            <div class=" formText">
+                <p>
+
+                        Stay in the loop with our latest updates and exclusive offers <br>
+                        by subscribing to our newsletter made just for you! <br>
+                      <br>
+                        Don't miss out!! – subscribe <b>NOW</b> and elevate your experience with us
+
+                </p>
+
+            </div>
+
+
+            <form id="subscriptionForm">
+                <div class="form-group" id="form-group1">
+
+
+                    <label for="name">
+                        Name:
+                    </label>
+
+                    <input type="text" id="name" name="name" placeholder="Enter your Name: " >
+                    <span id="nameError" class="error"></span>
+                </div>
+                <div  class="form-group" id="form-group2">
+
+
+                    <label for="email">
+                        Email:
+                    </label>
+
+                    <input type="email" id="email" name="email" placeholder=" &#9993; Email: Name@gmail.com">
+                    <span id="emailError" class="error"></span>
+                </div>
+                <button type="button" id="subscribeBtn">
+                    <span>Subscribe</span>
+                    <box-icon name='check-circle' animation='burst' color='#ffffff'></box-icon>
+                </button>
+            </form>
+
+
+        </div>
+    </div>
+
+
+
+    <div class="footer-section">
+        <br><br><br><br>
+        <div class="logo2"><i
+                class="bx bx-registered"
+                style="color: #ffffff; margin-left: 200px; margin-top: 30px"
+        ></i></div>
+        <p style="font-size: 13px;">
+            <br>
+            No 04,
+            Galle Road, <br> Colombo 04,<br>
+            Sri Lanka.
+        </p>
+        <br>
+
+        <p style="font-size: 13px;">
+            Tel-No: +94 77 5528 228
+        </p>
+        <br>
+
+        <a href=" " class="links">
+            nutrisense@gmail.com
+        </a>
+        <br>
+        <br>
+        <ul class="socialMediaLinks">
+            <li><a href="#" class="fa fa-facebook"></a> </li>
+            <li><a href="#" class="fa fa-twitter"></a>  </li>
+            <li><a href="#" class="fa fa-youtube"></a></li>
+            <li><a href="#" class="fa fa-instagram"></a></li>
+            <li><a href="#" class="fa fa-linkedin"></a></li>
+        </ul>
+    </div>
+
+    <div class="footer-section">
+        <br><br><br>
+        <h3>SUPPORT</h3>
+        <ul>
+            <li><a href="../CONTACTPAGE/Contact.html" class="links"> Contact us</a> </li>
+            <li><a href="../ABOUTUSPAGE/about.html" class="links"> About us</a> </li>
+        </ul>
+    </div>
+
+    <div class="footer-section">
+        <br><br><br>
+        <h3>FEATURES</h3>
+        <ul>
+            <li><a href="../oshini_frontend/index.html" class="links"> Input Location </a> </li>
+            <li><a href="../deficiency_finder/index.html" class="links"> Input Leaf Images </a> </li>
+        </ul>
+        <p id="copyright">
+            Copyright © 2025 NutriSense.com
+        </p><br><br>
+    </div>
+    <br>
+
+    <div class="footer-section">
+        <br><br><br>
+        <h3>PROFILE</h3>
+        <ul>
+            <li><a href="../SIGNINPAGE/SignInForm.html" class="links"> Account </a> </li>
+            <li><a href="../SIGNINPAGE/SignInForm.html" class="links"> Login </a> </li>
+            <li><a href="../SIGNINPAGE/SignInForm.html" class="links"> Sign up </a> </li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <br><br><br>
+        <h3>OTHER</h3>
+        <ul>
+            <li><a href="../GALLERYPAGE/Gallery.html" class="links"> Gallery </a> </li>
+            <li><a href="../LISTINGPAGE/listingpage.html" class="links"> Reviews and Ratings </a> </li>
+            <li><a href="#" class="links"> Editor's Page </a> </li>
+        </ul>
+
+    </div>
+</footer>
+
+</body>
+</html>
