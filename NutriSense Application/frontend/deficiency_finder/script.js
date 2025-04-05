@@ -140,18 +140,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const confidenceBar = document.getElementById(elementId.split('-')[0] + '-confidence');
         
         if (element && confidenceBar) {
-            if (value === "Unknown") {
-                element.textContent = `${label}: ${value}`;
-                element.innerHTML += `<span class="confidence-text">(${(confidence * 100).toFixed(1)}% confidence)</span>`;
-                element.innerHTML += `<br><small class="text-muted">This may be a healthy plant or a type not currently detectable by the system.</small>`;
-                document.getElementById('detailed-report').classList.remove('visible');
-            } else {
+            
                 element.textContent = `${label}: ${value}`;
                 const confidencePercent = (confidence * 100).toFixed(1);
                 element.innerHTML += `<span class="confidence-text">(${confidencePercent}% confidence)</span>`;
                 confidenceBar.innerHTML = `<div class="confidence-fill" style="width: ${confidencePercent}%"></div>`;
             }
-        }
+        
     }
 
     // Function to generate detailed report
@@ -205,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h4>Current Conditions</h4>
                         <ul class="report-list">
                             <li>Location: ${environmentalData.location}</li>
-                            <li>Temperature: ${environmentalData.temperature}°C</li>
+                            <li>Temperature: ${environmentalData.temperature ? Number(environmentalData.temperature).toFixed(1) : 'N/A'}°C</li>
                             <li>Humidity: ${environmentalData.humidity}%</li>
                             <li>${environmentalData.status}</li>
                         </ul>
@@ -347,6 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    
     // Handle form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -362,28 +358,25 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('results').style.display = 'none';
             document.getElementById('error').style.display = 'none';
             document.getElementById('detailed-report').classList.remove('visible');
+            document.getElementById('soil-selection').style.display = 'none'; // Hide soil selection
             
             const response = await fetch('http://localhost:5000/predict', {
                 method: 'POST',
                 body: formData
             });
             
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            
             const data = await response.json();
             
             // Hide loading state
             document.getElementById('loading').style.display = 'none';
             
-            // Show results
             if (data.error) {
                 document.getElementById('error').style.display = 'block';
                 document.getElementById('error').textContent = data.error;
                 return;
             }
             
+            // Show results
             document.getElementById('results').style.display = 'block';
             
             // Update results display
@@ -391,95 +384,95 @@ document.addEventListener('DOMContentLoaded', function() {
             updateResult('deficiency-type', 'Deficiency', data.deficiency.type, data.deficiency.confidence);
             updateResult('severity-level', 'Severity', data.severity.level, data.severity.confidence);
             
-            // Show soil selection if not already selected
-            if (!selectedSoilType && data.plant.type !== "Unknown") {
+            // Only show soil selection if deficiency is known and valid
+            if (data.deficiency.type !== "Unknown" && data.deficiency.type !== "Healthy/Unknown") {
                 document.getElementById('soil-selection').style.display = 'block';
                 document.getElementById('detailed-report').classList.remove('visible');
-            }else{
-                document.getElementById('soil-selection').style.display = 'none';
-                // Generate detailed report
-                generateDetailedReport(
-                    data.plant.type,
-                    data.deficiency.type,
-                    data.severity.level,
-                    {
-                        location: data.environmental_analysis?.location || 'Unknown',
-                        temperature: data.environmental_analysis?.temperature || 'N/A',
-                        humidity: data.environmental_analysis?.humidity || 'N/A',
-                        status: data.environmental_analysis?.status || 'Environmental data not available',
-                        soil_analysis: data.soil_analysis || {
-                            soil_type: selectedSoilType || 'Not specified',
-                            status: 'Soil analysis not available'
-                        },
-                        recommendation: data.recommendation || null
-                    }
-                );
-            }}
-            
-                        
-                        
-                     catch (error) {
-                        console.error('Error:', error);
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('error').style.display = 'block';
-                        document.getElementById('error').textContent = 'Error processing image. Please try again.';
-                    }
-                });
-            
-                // Add handler for soil type submission
-                document.getElementById('submitSoilType').addEventListener('click', function() {
-                    if (!selectedSoilType) {
-                        alert('Please select a soil type to continue.');
-                        return;
-                    }
+                if(selectedSoilType){
                     document.getElementById('soil-selection').style.display = 'none';
-                    // Resubmit the form with the soil type
-                    const formEvent = new Event('submit');
-                    form.dispatchEvent(formEvent);
-                });
-            
-                // Drag and drop handlers
-                const dropZone = document.querySelector('.file-upload label');
-            
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, preventDefaults, false);
-                });
-            
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    // Generate detailed report
+                    generateDetailedReport(
+                        data.plant.type,
+                        data.deficiency.type,
+                        data.severity.level,
+                        {
+                            location: data.environmental_analysis?.location || 'Unknown',
+                            temperature: data.environmental_analysis?.temperature || 'N/A',
+                            humidity: data.environmental_analysis?.humidity || 'N/A',
+                            status: data.environmental_analysis?.status || 'Environmental data not available',
+                            soil_analysis: data.soil_analysis || {
+                                soil_type: selectedSoilType || 'Not specified',
+                                status: 'Soil analysis not available'
+                            },
+                            recommendation: data.recommendation || null
+                        }
+                    );
                 }
+            } else {
+                document.getElementById('soil-selection').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = 'Error processing image. Please ensure you uploaded a valid image file.';
+        }
+    });
             
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, highlight, false);
-                });
-            
-                ['dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, unhighlight, false);
-                });
-            
-                function highlight(e) {
-                    dropZone.classList.add('highlight');
-                }
-            
-                function unhighlight(e) {
-                    dropZone.classList.remove('highlight');
-                }
-            
-                dropZone.addEventListener('drop', handleDrop, false);
-            
-                function handleDrop(e) {
-                    const dt = e.dataTransfer;
-                    const file = dt.files[0];
-                    fileInput.files = dt.files;
-                    
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            imagePreview.src = e.target.result;
-                            previewContainer.style.display = 'block';
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                }
-            });
+    // Add handler for soil type submission
+    document.getElementById('submitSoilType').addEventListener('click', function() {
+        if (!selectedSoilType) {
+            alert('Please select a soil type to continue.');
+            return;
+        }
+        document.getElementById('soil-selection').style.display = 'none';
+        // Resubmit the form with the soil type
+        const formEvent = new Event('submit');
+        form.dispatchEvent(formEvent);
+    });
+
+    // Drag and drop handlers
+    const dropZone = document.querySelector('.file-upload label');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('highlight');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('highlight');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        fileInput.files = dt.files;
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+});
