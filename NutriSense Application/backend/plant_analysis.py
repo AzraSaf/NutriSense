@@ -176,7 +176,7 @@ def check_environmental_conditions(plant_type, temperature, humidity):
         humidity_ok = humidity_range[0] <= humidity <= humidity_range[1]
 
         if temp_ok and humidity_ok:
-            return f"✅ Optimal: Temperature ({temperature}°C) and Humidity ({humidity}%) are within ideal ranges"
+            return f"✅ Optimal: Temperature ({temperature:.1f}°C) and Humidity ({humidity}%) are within ideal ranges"
         else:
             return f"⚠️ Suboptimal: Ideal ranges are {temp_range[0]}-{temp_range[1]}°C and {humidity_range[0]}-{humidity_range[1]}% humidity"
     return "Could not determine environmental suitability"
