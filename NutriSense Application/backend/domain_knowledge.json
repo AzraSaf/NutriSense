@@ -73,7 +73,7 @@
   },
   "plant_deficiency_map": {
     "Banana": ["Magnesium", "Iron", "Potassium"],
-    "Coffee": ["Magnesium", "Iron", "Potassium"],
+    "Coffee": ["Magnesium", "Iron", "Phosphorus"],
     "Rice": ["Nitrogen", "Phosphorus", "Potassium"]
   },
   "severity_levels": ["Mild", "Moderate", "Severe"],
