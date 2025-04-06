@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             recommendation: data.recommendation || null
                         }
                     );
-                }
+                }   
             } else {
                 document.getElementById('soil-selection').style.display = 'none';
             }
