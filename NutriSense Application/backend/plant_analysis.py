@@ -22,7 +22,7 @@ from shared_config import (
 plant_analysis_bp = Blueprint('plant_analysis', __name__)
 
 # API configurations
-IPSTACK_API_KEY = "a68c74752f2d6726db4478c21ed49ae0"
+IPSTACK_API_KEY = "9c0271f182bfff62d4b5426c8eb11fa8"
 IPSTACK_URL = f"http://api.ipstack.com/check?access_key={IPSTACK_API_KEY}"
 
 # Setup weather API
