@@ -54,7 +54,9 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-Step 4 : Set up PyCharm (YOUR PYCHARM INTREPRETER HAS TO BE PYTHON 3.12 FOR THIS TO WORK) 
+--This next step is only necessary if your interpreter is showing errors or app.py fails to run--
+
+Step 4 : Set up PyCharm (RECOMMENDED PYCHARM INTREPRETER TO BE IN VERSION 3.12) 
 
 i. Open PyCharm
 
