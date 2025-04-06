@@ -1,8 +1,15 @@
+-Before getting started you need to ensure you are on Python version 3.12.9 and your PyCharm interpreter is version 3.12-
+
+Once you are on the correct versions. You can start ahead!
+
 How to run :
 
 ---Run all of these commands in the command prompt by searching "cmd" in the windows search bar---
 
-Step 1 : Download GIT-LFS
+Step 1 : Download GIT-LFS.
+			  
+(Most likely you will face error when trying to install GIT-LFS through cmd; if so just search git-lfs 
+ in the browser and download through the first link)  
 
 # For Windows (using Chocolatey):
 choco install git-lfs
@@ -21,6 +28,8 @@ git lfs install
 
 # Clone your repository
 git clone https://github.com/AzraSaf/NutriSense.git
+
+# Navigate to repository path
 cd NutriSense
 
 # Pull LFS files
